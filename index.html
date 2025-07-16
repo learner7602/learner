@@ -3,76 +3,113 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learner - Your Study Companion</title>
+    <title>Learner - Your Professional Study Companion</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts - Inter (for general text) and Poppins (for headings) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons (optional, but good for professional look) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <style>
         /* Custom CSS for general layout, overrides, and animations */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0; /* Lighter blue-gray background */
+            background-color: #f8fafc; /* Very light blue-gray */
+            color: #334155; /* Slate-700 for default text */
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
         }
         .content-section {
             display: none; /* Hidden by default */
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            transform: translateY(15px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
         }
         .content-section.active {
             display: block; /* Shown when active */
             opacity: 1;
             transform: translateY(0);
         }
+        .nav-link {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease-in-out;
+            color: white;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
         .nav-link.active {
-            font-weight: 700; /* Bold active link */
-            color: #bfdbfe; /* Lighter blue for active link */
-            background-color: rgba(255, 255, 255, 0.1); /* Subtle background for active link */
-            border-radius: 0.375rem; /* rounded-md */
+            background-color: rgba(255, 255, 255, 0.25);
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transform: translateY(-1px);
+        }
+        .sub-nav-link {
+            padding: 0.6rem 1.25rem;
+            display: block;
+            color: #e2e8f0; /* Slate-200 */
+            transition: all 0.2s ease-in-out;
+            font-weight: 400;
+        }
+        .sub-nav-link:hover {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            padding-left: 1.5rem; /* Indent on hover */
         }
         .sub-nav-link.active {
             font-weight: 600;
-            color: #1d4ed8; /* Darker blue for active sub-link */
-            background-color: #eff6ff; /* Lightest blue background */
-            border-left: 4px solid #3b82f6; /* Blue border on left */
+            background-color: #2563eb; /* Blue-600 */
+            color: white;
+            border-left: 4px solid #bfdbfe; /* Lighter blue border */
         }
         .dropdown-menu {
             display: none;
             position: absolute;
-            background-color: #3b82f6; /* Blue-600 */
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 0.375rem; /* rounded-md */
+            background-color: #4f46e5; /* Indigo-600 */
+            min-width: 180px;
+            box-shadow: 0px 10px 20px 0px rgba(0,0,0,0.3);
+            z-index: 10;
+            border-radius: 0.75rem; /* rounded-xl */
             padding: 0.5rem 0;
-            top: 100%; /* Position below the parent nav item */
-            left: 0;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-out, visibility 0.3s ease-out, transform 0.3s ease-out;
         }
         .dropdown:hover .dropdown-menu {
             display: block;
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
         }
-        .dropdown-menu a {
-            color: white;
-            padding: 8px 16px;
-            text-decoration: none;
-            display: block;
-            transition: background-color 0.3s ease;
-        }
-        .dropdown-menu a:hover {
-            background-color: #2563eb; /* Blue-700 */
-        }
-        /* Style for the notice board items */
         .notice-item {
             background-color: #fff;
-            border-left: 4px solid #3b82f6; /* Blue accent */
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 5px solid #3b82f6; /* Blue accent */
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease-in-out;
+        }
+        .notice-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
         .notice-item strong {
             color: #1e40af; /* Darker blue */
+            font-size: 1.125rem; /* text-lg */
         }
         .notice-item span {
             font-size: 0.875rem; /* text-sm */
@@ -80,22 +117,54 @@
             display: block;
             margin-top: 0.25rem;
         }
+
+        /* Responsive adjustments for header and nav */
+        @media (max-width: 768px) {
+            .nav-link {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+            .dropdown-menu {
+                left: 0;
+                transform: translateX(0);
+                min-width: 100%; /* Full width on mobile */
+            }
+            .dropdown:hover .dropdown-menu {
+                transform: translateX(0) translateY(0);
+            }
+            .quiz-pdf-video-grid {
+                grid-template-columns: 1fr; /* Stack on small screens */
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
     <div id="app" class="min-h-screen flex flex-col">
         <!-- Header Section -->
-        <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-4 shadow-xl rounded-b-xl">
-            <h1 class="text-3xl sm:text-5xl font-extrabold text-center tracking-wide">Learner</h1>
-            <p class="text-center text-sm sm:text-lg mt-2 opacity-90">Your Gateway to Academic Excellence (Classes V - X)</p>
+        <header class="bg-gradient-to-r from-blue-700 to-indigo-600 text-white p-6 shadow-2xl rounded-b-3xl relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10" style="background-image: url('https://www.transparenttextures.com/patterns/cubes.png');"></div>
+            <div class="container mx-auto flex flex-col sm:flex-row items-center justify-between relative z-10">
+                <div class="flex items-center mb-4 sm:mb-0">
+                    <!-- Logo Placeholder -->
+                    <img src="logo.jpeg" alt="Learner Logo" class="h-16 w-16 rounded-full mr-4 shadow-lg border-2 border-white">
+                    <!-- Replace with your actual logo -->
+                    <div>
+                        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight">Learner</h1>
+                        <p class="text-sm sm:text-lg opacity-90 mt-1">Your Gateway to Academic Excellence</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-semibold">Empowering Students, Inspiring Futures</p>
+                </div>
+            </div>
         </header>
 
         <!-- Navigation Bar -->
-        <nav class="bg-blue-600 p-3 shadow-lg rounded-t-xl mt-4 mx-auto w-11/12 sm:w-full max-w-5xl">
-            <ul class="flex flex-wrap justify-center space-x-2 sm:space-x-4">
-                <li><a href="#home" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Home</a></li>
+        <nav class="bg-indigo-700 p-4 shadow-xl rounded-xl mt-6 mx-auto w-11/12 max-w-6xl z-20">
+            <ul class="flex flex-wrap justify-center space-x-2 sm:space-x-6">
+                <li><a href="#home" class="nav-link"><i class="fas fa-home mr-2"></i> Home</a></li>
                 <li class="relative dropdown">
-                    <a href="#" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Classes &#9662;</a>
+                    <a href="#" class="nav-link"><i class="fas fa-graduation-cap mr-2"></i> Classes <i class="fas fa-chevron-down ml-2 text-xs"></i></a>
                     <div class="dropdown-menu">
                         <a href="#class-v" class="sub-nav-link" data-parent-section="classes">Class V</a>
                         <a href="#class-vi" class="sub-nav-link" data-parent-section="classes">Class VI</a>
@@ -105,62 +174,74 @@
                         <a href="#class-x" class="sub-nav-link" data-parent-section="classes">Class X</a>
                     </div>
                 </li>
-                <li><a href="#resources" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Resources</a></li>
-                <li><a href="#contact" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Contact</a></li>
+                <li><a href="#resources" class="nav-link"><i class="fas fa-book-open mr-2"></i> Resources</a></li>
+                <li><a href="#contact" class="nav-link"><i class="fas fa-envelope mr-2"></i> Contact</a></li>
             </ul>
         </nav>
 
         <!-- Main Content Area -->
-        <main class="flex-grow p-6 bg-gray-100 flex justify-center items-start">
-            <div class="w-full max-w-5xl">
+        <main class="flex-grow p-6 bg-gray-50 flex justify-center items-start">
+            <div class="w-full max-w-6xl">
                 <!-- Home Section -->
-                <section id="home" class="content-section active bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Welcome to Learner!</h2>
-                    <p class="text-gray-700 leading-relaxed text-lg mb-6 text-center">
+                <section id="home" class="content-section active bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-6 text-center">Welcome to Learner!</h2>
+                    <p class="text-gray-700 leading-relaxed text-lg mb-8 text-center max-w-3xl mx-auto">
                         Your ultimate online companion for school studies, designed to help students from Class V to X
                         excel academically. Dive into our rich collection of interactive quizzes, downloadable study
                         materials, insightful video lessons, and a vibrant notice board for the latest updates.
                     </p>
 
-                    <!-- Notice Board -->
-                    <div class="bg-blue-50 p-6 rounded-lg shadow-inner border border-blue-200">
-                        <h3 class="text-xl font-semibold text-blue-800 mb-4 flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            Notice Board
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="notice-item">
-                                <strong>New Quiz Added: Class IX Science!</strong>
-                                <span>Date: July 10, 2025</span>
-                                <p class="text-gray-600 text-sm mt-1">A new comprehensive quiz for Class IX Science is now available in the Class IX section. Test your knowledge on new topics!</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                        <!-- Notice Board -->
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-inner border border-blue-200">
+                            <h3 class="text-2xl font-semibold text-blue-800 mb-4 flex items-center">
+                                <i class="fas fa-bullhorn mr-3 text-blue-600"></i> Notice Board
+                            </h3>
+                            <div class="space-y-4">
+                                <div class="notice-item">
+                                    <strong>New Quiz Added: Class IX Science!</strong>
+                                    <span>Date: July 10, 2025</span>
+                                    <p class="text-gray-600 text-sm mt-1">A new comprehensive quiz for Class IX Science is now available in the Class IX section. Test your knowledge on new topics!</p>
+                                </div>
+                                <div class="notice-item">
+                                    <strong>Summer Break Study Tips</strong>
+                                    <span>Date: June 28, 2025</span>
+                                    <p class="text-gray-600 text-sm mt-1">Check out our new article on effective study strategies for the summer break under the Resources section.</p>
+                                </div>
+                                <div class="notice-item">
+                                    <strong>Website Maintenance Alert</strong>
+                                    <span>Date: July 15, 2025 (8 PM - 10 PM IST)</span>
+                                    <p class="text-gray-600 text-sm mt-1">Scheduled maintenance will occur tonight. Some features may be temporarily unavailable.</p>
+                                </div>
                             </div>
-                            <div class="notice-item">
-                                <strong>Summer Break Study Tips</strong>
-                                <span>Date: June 28, 2025</span>
-                                <p class="text-gray-600 text-sm mt-1">Check out our new article on effective study strategies for the summer break under the Resources section.</p>
-                            </div>
-                            <div class="notice-item">
-                                <strong>Website Maintenance Alert</strong>
-                                <span>Date: July 15, 2025 (8 PM - 10 PM IST)</span>
-                                <p class="text-gray-600 text-sm mt-1">Scheduled maintenance will occur tonight. Some features may be temporarily unavailable.</p>
-                            </div>
+                        </div>
+
+                        <!-- Your Picture / About Section -->
+                        <div class="bg-purple-50 p-6 rounded-xl shadow-inner border border-purple-200 flex flex-col items-center text-center">
+                            <h3 class="text-2xl font-semibold text-purple-800 mb-4 flex items-center">
+                                <i class="fas fa-user-circle mr-3 text-purple-600"></i> About the Creator
+                            </h3>
+                            <!-- Your Picture Placeholder -->
+                            <img src="yourphoto.jpeg" alt="Your Photo" class="w-36 h-36 rounded-full object-cover shadow-lg border-4 border-white mb-4">
+                            <!-- Replace with your actual picture URL -->
+                            <p class="text-gray-700 leading-relaxed">
+                                Hello! I'm dedicated to making learning accessible and engaging for students.
+                                With a passion for education, I've curated these resources to support your academic journey.
+                                Feel free to explore and make the most of this platform!
+                            </p>
                         </div>
                     </div>
                 </section>
 
                 <!-- Dynamic Class Sections (V to X) -->
-                <!-- Replicated for each class using JavaScript for dynamic content loading or explicit sections -->
-                <!-- For simplicity and static nature, I will explicitly create each section -->
-
                 <!-- Class V Section -->
-                <section id="class-v" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class V Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <section id="class-v" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class V Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
                         <!-- Quizzes -->
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
                             <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                Quizzes
+                                <i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes
                             </h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-blue-600 hover:underline transition-colors duration-200">Math: Number System Basics</a></li>
@@ -169,10 +250,9 @@
                             </ul>
                         </div>
                         <!-- PDFs -->
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
                             <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>
-                                PDFs
+                                <i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs
                             </h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline transition-colors duration-200">Math: Addition & Subtraction Notes</a></li>
@@ -181,10 +261,9 @@
                             </ul>
                         </div>
                         <!-- Videos -->
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
                             <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>
-                                Video Lessons
+                                <i class="fas fa-video mr-3 text-red-500"></i> Video Lessons
                             </h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline transition-colors duration-200">Math: Place Value Explained</a></li>
@@ -196,25 +275,25 @@
                 </section>
 
                 <!-- Class VI Section -->
-                <section id="class-vi" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VI Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
+                <section id="class-vi" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class VI Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-blue-600 hover:underline">Math: Integers & Fractions</a></li>
                                 <li><a href="#" class="text-blue-600 hover:underline">Science: Separation of Substances</a></li>
                             </ul>
                         </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
+                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Decimals Notes</a></li>
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Body Movements</a></li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><i class="fas fa-video mr-3 text-red-500"></i> Video Lessons</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Ratio & Proportion</a></li>
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Light, Shadows & Reflections</a></li>
@@ -224,25 +303,25 @@
                 </section>
 
                 <!-- Class VII Section -->
-                <section id="class-vii" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VII Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
+                <section id="class-vii" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class VII Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="Africa quize.html" class="text-blue-600 hover:underline">Geography: Africa</a></li>
-                                <li><a href="Englishgrammervii quizze.html" class="text-blue-600 hover:underline">English: Grammer part-1</a></li>
+                                <li><a href="Africa quize.html" class="text-blue-600 hover:underline">Geography : Part-1</a></li>
+                                <li><a href="Englishgrammervii quizze.html" target="_blank" class="text-blue-600 hover:underline">English : Grammar part-1</a></li>
                             </ul>
                         </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
+                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="africa assignment.pdf" target="_blank" class="text-green-600 hover:underline">Geography: Assignment On Africa</a></li>
+                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Simple Equations</a></li>
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Heat & Temperature</a></li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><i class="fas fa-video mr-3 text-red-500"></i> Video Lessons</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Lines and Angles</a></li>
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Acids, Bases and Salts</a></li>
@@ -252,25 +331,25 @@
                 </section>
 
                 <!-- Class VIII Section -->
-                <section id="class-viii" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VIII Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
+                <section id="class-viii" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class VIII Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-blue-600 hover:underline">Math: Squares & Square Roots</a></li>
                                 <li><a href="#" class="text-blue-600 hover:underline">Science: Crop Production & Management</a></li>
                             </ul>
                         </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
+                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Cubes & Cube Roots</a></li>
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Microorganisms</a></li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><i class="fas fa-video mr-3 text-red-500"></i> Video Lessons</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Algebraic Expressions</a></li>
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Force and Pressure</a></li>
@@ -280,25 +359,25 @@
                 </section>
 
                 <!-- Class IX Section -->
-                <section id="class-ix" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class IX Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
+                <section id="class-ix" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class IX Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-blue-600 hover:underline">Math: Number Systems</a></li>
                                 <li><a href="#" class="text-blue-600 hover:underline">Science: Motion</a></li>
                             </ul>
                         </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
+                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Polynomials</a></li>
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Force & Laws of Motion</a></li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><i class="fas fa-video mr-3 text-red-500"></i> Video Lessons</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Coordinate Geometry</a></li>
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Work and Energy</a></li>
@@ -308,25 +387,25 @@
                 </section>
 
                 <!-- Class X Section -->
-                <section id="class-x" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class X Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
+                <section id="class-x" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-blue-800 mb-8 text-center">Class X Study Materials</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 quiz-pdf-video-grid">
+                        <div class="bg-blue-50 p-6 rounded-xl shadow-md border border-blue-200">
+                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><i class="fas fa-question-circle mr-3 text-blue-500"></i> Quizzes</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-blue-600 hover:underline">Math: Real Numbers</a></li>
                                 <li><a href="#" class="text-blue-600 hover:underline">Science: Chemical Reactions & Equations</a></li>
                             </ul>
                         </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
+                        <div class="bg-green-50 p-6 rounded-xl shadow-md border border-green-200">
+                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><i class="fas fa-file-pdf mr-3 text-green-500"></i> PDFs</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Polynomials & Quadratic Equations</a></li>
                                 <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Acids, Bases & Salts</a></li>
                             </ul>
                         </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
+                        <div class="bg-red-50 p-6 rounded-xl shadow-md border border-red-200">
+                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><i class="fas fa-video mr-3 text-red-500"></i> Video Lessons</h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Trigonometry Introduction</a></li>
                                 <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Electricity Basics</a></li>
@@ -336,14 +415,13 @@
                 </section>
 
                 <!-- Resources Section -->
-                <section id="resources" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Helpful Resources</h2>
-                    <p class="text-gray-700 mb-6 text-center">Explore these external links and tools to further enhance your learning journey.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-yellow-50 p-6 rounded-lg shadow-md border border-yellow-200">
+                <section id="resources" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">Helpful Resources</h2>
+                    <p class="text-gray-700 mb-6 text-center max-w-3xl mx-auto">Discover external links and tools to further enhance your learning journey.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-yellow-50 p-6 rounded-xl shadow-md border border-yellow-200">
                             <h3 class="font-bold text-xl text-yellow-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12 7a1 1 0 11-2 0 1 1 0 012 0zM12 11a1 1 0 10-2 0v3a1 1 0 102 0v-3zM10 2a8 8 0 100 16 8 8 0 000-16z" clip-rule="evenodd"></path></svg>
-                                Educational Websites
+                                <i class="fas fa-globe mr-3 text-yellow-500"></i> Educational Websites
                             </h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="https://www.khanacademy.org/" target="_blank" class="text-yellow-600 hover:underline transition-colors duration-200">Khan Academy</a> - Free online courses for various subjects.</li>
@@ -351,10 +429,9 @@
                                 <li><a href="https://ncert.nic.in/" target="_blank" class="text-yellow-600 hover:underline transition-colors duration-200">NCERT Official Website</a> - Download textbooks and syllabi.</li>
                             </ul>
                         </div>
-                        <div class="bg-purple-50 p-6 rounded-lg shadow-md border border-purple-200">
+                        <div class="bg-purple-50 p-6 rounded-xl shadow-md border border-purple-200">
                             <h3 class="font-bold text-xl text-purple-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
-                                Study Tools & Tips
+                                <i class="fas fa-tools mr-3 text-purple-500"></i> Study Tools & Tips
                             </h3>
                             <ul class="list-disc list-inside text-gray-700 space-y-2">
                                 <li><a href="#" class="text-purple-600 hover:underline transition-colors duration-200">Online Scientific Calculator</a> (Placeholder)</li>
@@ -366,10 +443,10 @@
                 </section>
 
                 <!-- Contact Section -->
-                <section id="contact" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Get in Touch</h2>
-                    <p class="text-gray-700 mb-6 text-center">Have questions, suggestions, or feedback? We'd love to hear from you!</p>
-                    <form class="space-y-6 max-w-lg mx-auto">
+                <section id="contact" class="content-section bg-white p-8 rounded-2xl shadow-3xl mb-8 border border-blue-100">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-8 text-center">Get in Touch</h2>
+                    <p class="text-gray-700 mb-6 text-center max-w-3xl mx-auto">Have questions, suggestions, or feedback? We'd love to hear from you!</p>
+                    <form class="space-y-6 max-w-lg mx-auto p-6 bg-gray-50 rounded-xl shadow-inner border border-gray-200">
                         <div>
                             <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Your Name:</label>
                             <input type="text" id="name" name="name" class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" placeholder="Enter your name">
@@ -392,8 +469,8 @@
         </main>
 
         <!-- Footer Section -->
-        <footer class="bg-gray-900 text-white p-6 text-center text-sm rounded-t-xl mt-auto shadow-inner">
-            &copy; 2025 Learner. All rights reserved. Made with <span class="text-red-500">&#x2764;</span> for students.
+        <footer class="bg-gray-900 text-white p-6 text-center text-sm rounded-t-2xl mt-auto shadow-inner">
+            &copy; 2025 Learner. All rights reserved. Designed with <span class="text-red-500"><i class="fas fa-heart"></i></span> for students.
         </footer>
     </div>
 
@@ -435,9 +512,9 @@
                     const activeSubNavLink = document.querySelector(`.sub-nav-link[href="#${id}"]`);
                     if (activeSubNavLink) {
                         activeSubNavLink.classList.add('active');
-                        const parentSectionId = activeSubNavLink.dataset.parentSection;
-                        if (parentSectionId) {
-                            const parentNavLink = document.querySelector(`.nav-link[href="#"]`); // The 'Classes' dropdown link
+                        const parentNavLinkContainer = activeSubNavLink.closest('.dropdown');
+                        if (parentNavLinkContainer) {
+                            const parentNavLink = parentNavLinkContainer.querySelector('.nav-link[href="#"]');
                             if (parentNavLink) {
                                 parentNavLink.classList.add('active');
                             }
