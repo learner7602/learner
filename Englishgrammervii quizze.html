@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ইংলিশ গ্রামার কুইজ - Learner</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom CSS for quiz page */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .quiz-container {
+            background-color: #ffffff;
+            padding: 2.5rem; /* 40px */
+            border-radius: 1rem; /* 16px */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin-top: 20px; /* Space from top */
+        }
+        .question-card {
+            background-color: #e0f2fe; /* Light blue */
+            padding: 1.5rem; /* 24px */
+            margin-bottom: 1.5rem; /* 24px */
+            border-radius: 0.75rem; /* 12px */
+            border: 1px solid #90cdf4; /* Blue border */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .question-text {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            color: #1a202c; /* gray-900 */
+            margin-bottom: 1rem; /* 16px */
+        }
+        .option-label {
+            display: flex;
+            align-items: center;
+            background-color: #ffffff;
+            padding: 0.75rem 1rem; /* 12px 16px */
+            border-radius: 0.5rem; /* 8px */
+            margin-bottom: 0.5rem; /* 8px */
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            border: 1px solid #cbd5e0; /* gray-300 */
+        }
+        .option-label:hover {
+            background-color: #f0f4f8; /* Light blue-gray on hover */
+            border-color: #63b3ed; /* Blue-400 */
+            transform: translateY(-2px);
+        }
+        .option-input[type="radio"] {
+            margin-right: 0.75rem; /* 12px */
+            accent-color: #3b82f6; /* Blue-500 */
+            width: 1.25rem; /* 20px */
+            height: 1.25rem; /* 20px */
+        }
+        .submit-button {
+            background-color: #3b82f6; /* Blue-500 */
+            color: white;
+            padding: 0.75rem 1.5rem; /* 12px 24px */
+            border-radius: 0.5rem; /* 8px */
+            font-weight: 600; /* font-semibold */
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .submit-button:hover {
+            background-color: #2563eb; /* Blue-600 */
+            transform: translateY(-2px);
+        }
+        .submit-button:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+        .results-container {
+            background-color: #ecfdf5; /* Light green */
+            padding: 2rem; /* 32px */
+            border-radius: 1rem; /* 16px */
+            border: 1px solid #68d391; /* Green-400 */
+            margin-top: 2rem; /* 32px */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .result-score {
+            font-size: 2rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            color: #065f46; /* Green-800 */
+            text-align: center;
+            margin-bottom: 1rem; /* 16px */
+        }
+        .answer-feedback {
+            margin-top: 1.5rem; /* 24px */
+            border-top: 1px solid #d1fae5; /* Green-100 */
+            padding-top: 1.5rem; /* 24px */
+        }
+        .feedback-item {
+            background-color: #f0fdf4; /* Lighter green */
+            padding: 1rem; /* 16px */
+            border-radius: 0.5rem; /* 8px */
+            margin-bottom: 1rem; /* 16px */
+            border: 1px solid #a7f3d0; /* Green-200 */
+        }
+        .feedback-item.correct .option-label {
+            background-color: #d1fae5; /* Green-100 */
+            border-color: #34d399; /* Green-400 */
+        }
+        .feedback-item.incorrect .option-label {
+            background-color: #fee2e2; /* Red-100 */
+            border-color: #ef4444; /* Red-500 */
+        }
+        .feedback-item .correct-answer-text {
+            color: #065f46; /* Green-800 */
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .feedback-item .wrong-answer-text {
+            color: #dc2626; /* Red-600 */
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        .feedback-item .question-text-feedback { /* Specific class for question text in feedback */
+            color: #10b981; /* Green-500 */
+            font-weight: 700;
+        }
+        .explain-button {
+            background-color: #6366f1; /* Indigo-500 */
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .explain-button:hover {
+            background-color: #4f46e5; /* Indigo-600 */
+        }
+        .explanation-text {
+            background-color: #eef2ff; /* Indigo-50 */
+            border-left: 4px solid #818cf8; /* Indigo-300 */
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            border-radius: 0.375rem;
+            color: #4338ca; /* Indigo-700 */
+            font-size: 0.9rem;
+            line-height: 1.4;
+            display: none; /* Hidden by default */
+        }
+        .explanation-text.show {
+            display: block;
+        }
+        .loading-indicator {
+            display: none;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .loading-indicator.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <h1 class="text-3xl font-bold text-center text-blue-700 mb-8">ইংলিশ গ্রামার কুইজ (Class VII)</h1>
+        <p class="text-center text-gray-600 mb-6">Test your English Grammar knowledge! Each question carries 1 mark.</p>
+
+        <form id="quizForm">
+            <!-- Questions will be dynamically loaded here by JavaScript -->
+        </form>
+
+        <div class="flex justify-center mt-8">
+            <button id="submitQuiz" class="submit-button">Submit Quiz</button>
+        </div>
+
+        <div id="quizResults" class="results-container hidden">
+            <h2 class="text-2xl font-bold text-center text-green-700 mb-4">Your Results</h2>
+            <p class="result-score">You scored: <span id="scoreDisplay">0</span>/<span id="totalQuestions">20</span></p>
+            <div id="answerFeedback" class="answer-feedback">
+                <!-- Answer feedback will be displayed here -->
+            </div>
+            <div class="flex justify-center mt-6">
+                <button id="retakeQuiz" class="submit-button bg-purple-600 hover:bg-purple-700">Retake Quiz</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Identify the type of sentence: 'What a beautiful day it is!'",
+                options: ["a) Declarative", "b) Imperative", "c) Interrogative", "d) Exclamatory"],
+                correct: "d) Exclamatory"
+            },
+            {
+                question: "Choose the correct pronoun: 'She gave the book to _____.'",
+                options: ["a) he", "b) him", "c) his", "d) himself"],
+                correct: "b) him"
+            },
+            {
+                question: "Fill in the blank with the correct form of the verb: 'The sun _____ in the east.'",
+                options: ["a) rise", "b) rose", "c) rises", "d) rising"],
+                correct: "c) rises"
+            },
+            {
+                question: "Identify the adjective in the sentence: 'The old man walked slowly.'",
+                options: ["a) old", "b) man", "c) walked", "d) slowly"],
+                correct: "a) old"
+            },
+            {
+                question: "Which of the following is a collective noun?",
+                options: ["a) honesty", "b) bravery", "c) team", "d) water"],
+                correct: "c) team"
+            },
+            {
+                question: "Choose the correct preposition: 'The cat jumped _____ the table.'",
+                options: ["a) in", "b) on", "c) over", "d) under"],
+                correct: "c) over"
+            },
+            {
+                question: "Identify the adverb in the sentence: 'She sings beautifully.'",
+                options: ["a) she", "b) sings", "c) beautifully", "d) none of these"],
+                correct: "c) beautifully"
+            },
+            {
+                question: "Combine the sentences using a suitable conjunction: 'He is rich. He is not happy.'",
+                options: ["a) He is rich and he is not happy.", "b) He is rich but he is not happy.", "c) He is rich or he is not happy.", "d) He is rich so he is not happy."],
+                correct: "b) He is rich but he is not happy."
+            },
+            {
+                question: "Change the voice: 'The boy broke the window.'",
+                options: ["a) The window was broken by the boy.", "b) The window is broken by the boy.", "c) The window has been broken by the boy.", "d) The window broke the boy."],
+                correct: "a) The window was broken by the boy."
+            },
+            {
+                question: "Fill in the blank with a suitable modal verb: 'You _____ respect your elders.'",
+                options: ["a) can", "b) might", "c) should", "d) would"],
+                correct: "c) should"
+            },
+            {
+                question: "Identify the non-finite verb: 'I like to read books.'",
+                options: ["a) like", "b) to read", "c) books", "d) I"],
+                correct: "b) to read"
+            },
+            {
+                question: "Choose the correct question tag: 'You are a student, _____?'",
+                options: ["a) are you", "b) aren't you", "c) do you", "d) don't you"],
+                correct: "b) aren't you"
+            },
+            {
+                question: "Change into Indirect Speech: 'He said, 'I am busy.''",
+                options: ["a) He said that he is busy.", "b) He said that he was busy.", "c) He said he had been busy.", "d) He said that I am busy."],
+                correct: "b) He said that he was busy."
+            },
+            {
+                question: "Which of these is a demonstrative pronoun?",
+                options: ["a) who", "b) them", "c) this", "d) my"],
+                correct: "c) this"
+            },
+            {
+                question: "Identify the adverb of time: 'She will come tomorrow.'",
+                options: ["a) she", "b) will come", "c) tomorrow", "d) come"],
+                correct: "c) tomorrow"
+            },
+            {
+                question: "Fill in the blank with the correct article: 'He is _____ honest man.'",
+                options: ["a) a", "b) an", "c) the", "d) no article"],
+                correct: "b) an"
+            },
+            {
+                question: "Choose the correct form of adjective: 'She is the _____ girl in the class.' (tall)",
+                options: ["a) taller", "b) tallest", "c) tall", "d) more tall"],
+                correct: "b) tallest"
+            },
+            {
+                question: "Which of the following is a compound sentence?",
+                options: ["a) He reads a book.", "b) Although he is rich, he is not happy.", "c) He is rich, and he is happy.", "d) Running quickly, he caught the bus."],
+                correct: "c) He is rich, and he is happy."
+            },
+            {
+                question: "Identify the subject in the sentence: 'Under the tree sat an old woman.'",
+                options: ["a) Under the tree", "b) sat", "c) an old woman", "d) tree"],
+                correct: "c) an old woman"
+            },
+            {
+                question: "What punctuation mark is used at the end of an interrogative sentence?",
+                options: ["a) . (full stop)", "b) ! (exclamation mark)", "c) ? (question mark)", "d) , (comma)"],
+                correct: "c) ? (question mark)"
+            }
+        ];
+
+        const quizForm = document.getElementById('quizForm');
+        const submitQuizBtn = document.getElementById('submitQuiz');
+        const quizResultsDiv = document.getElementById('quizResults');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const totalQuestionsDisplay = document.getElementById('totalQuestions');
+        const answerFeedbackDiv = document.getElementById('answerFeedback');
+        const retakeQuizBtn = document.getElementById('retakeQuiz');
+
+        // Function to load questions
+        function loadQuiz() {
+            quizForm.innerHTML = '';
+            answerFeedbackDiv.innerHTML = '';
+            quizResultsDiv.classList.add('hidden');
+            submitQuizBtn.style.display = 'block';
+            totalQuestionsDisplay.textContent = questions.length;
+
+            questions.forEach((q, index) => {
+                const questionHtml = `
+                    <div class="question-card">
+                        <p class="question-text">${index + 1}. ${q.question}</p>
+                        <div class="options-container">
+                            ${q.options.map((option, optIndex) => `
+                                <label class="option-label">
+                                    <input type="radio" name="question${index}" value="${option}" class="option-input">
+                                    ${option}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                quizForm.innerHTML += questionHtml;
+            });
+        }
+
+        // Function to call Gemini API for explanation
+        async function getExplanation(questionText, correctAnswer, explanationElement, loadingIndicatorElement) {
+            loadingIndicatorElement.textContent = 'Explanation loading...';
+            loadingIndicatorElement.classList.add('show');
+            explanationElement.classList.remove('show');
+            explanationElement.textContent = ''; // Clear previous explanation
+
+            const prompt = `Please explain the correct answer for the following English Grammar question in English: "${questionText}" The correct answer is "${correctAnswer}". Provide a concise explanation.`;
+
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "" // Canvas environment will inject this for gemini-2.0-flash
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('API call failed with status:', response.status, 'Response:', errorText);
+                    explanationElement.textContent = `Failed to load explanation: ${response.status} ${response.statusText}`;
+                    explanationElement.classList.add('show');
+                    return; // Exit if response is not OK
+                }
+
+                const result = await response.json();
+                console.log('Gemini API response:', result); // Log the full response for debugging
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    explanationElement.textContent = text;
+                    explanationElement.classList.add('show');
+                } else {
+                    console.warn('Gemini API response structure unexpected or no content:', result);
+                    explanationElement.textContent = 'Explanation not available. (API response unexpected)';
+                    explanationElement.classList.add('show');
+                }
+            } catch (error) {
+                console.error('Error fetching explanation (network/parsing):', error);
+                explanationElement.textContent = 'Failed to load explanation. Please check your internet connection.';
+                explanationElement.classList.add('show');
+            } finally {
+                loadingIndicatorElement.classList.remove('show');
+            }
+        }
+
+        // Function to calculate and display results
+        function submitQuiz() {
+            let score = 0;
+            answerFeedbackDiv.innerHTML = ''; // Clear previous feedback
+
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                const questionCard = quizForm.children[index]; // Get the specific question card
+
+                let isCorrect = false;
+                let userAnswer = "No answer selected"; // Default if no option selected
+
+                if (selectedOption) {
+                    userAnswer = selectedOption.value;
+                    if (selectedOption.value === q.correct) {
+                        score++;
+                        isCorrect = true;
+                    }
+                }
+
+                // Add feedback for each question
+                const feedbackItem = document.createElement('div');
+                feedbackItem.classList.add('feedback-item');
+                feedbackItem.innerHTML = `
+                    <p class="question-text-feedback">${index + 1}. ${q.question}</p>
+                    <p class="${isCorrect ? 'text-green-700' : 'text-red-700'} font-semibold">Your Answer: ${userAnswer} <span class="${isCorrect ? 'text-green-500' : 'text-red-500'}">(${isCorrect ? 'Correct' : 'Incorrect'})</span></p>
+                    ${!isCorrect ? `<p class="correct-answer-text">Correct Answer: ${q.correct}</p>` : ''}
+                    <button class="explain-button" data-question-index="${index}">✨ See Explanation</button>
+                    <div class="loading-indicator"></div>
+                    <div class="explanation-text"></div>
+                `;
+                answerFeedbackDiv.appendChild(feedbackItem);
+
+                // Disable all radio buttons after submission
+                const radios = questionCard.querySelectorAll('input[type="radio"]');
+                radios.forEach(radio => radio.disabled = true);
+            });
+
+            // Attach event listeners to the new explain buttons
+            document.querySelectorAll('.explain-button').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const questionIndex = event.target.dataset.questionIndex;
+                    const questionData = questions[questionIndex];
+                    const explanationElement = event.target.nextElementSibling.nextElementSibling; // The div after loading indicator
+                    const loadingIndicatorElement = event.target.nextElementSibling; // The div after the button
+
+                    getExplanation(questionData.question, questionData.correct, explanationElement, loadingIndicatorElement);
+                });
+            });
+
+            scoreDisplay.textContent = score;
+            quizResultsDiv.classList.remove('hidden');
+            submitQuizBtn.style.display = 'none';
+        }
+
+        // Event Listeners
+        submitQuizBtn.addEventListener('click', submitQuiz);
+        retakeQuizBtn.addEventListener('click', loadQuiz);
+
+        // Initial load of the quiz
+        loadQuiz();
+    </script>
+</body>
+</html>
