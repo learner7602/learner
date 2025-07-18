@@ -3,478 +3,980 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learner - Your Study Companion</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Learner - Book Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* Custom CSS for general layout, overrides, and animations */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #e2e8f0; /* Lighter blue-gray background */
+            background-color: #f8fafc; /* Very light blue-gray background */
+            color: #2c3e50; /* Darker text for better contrast */
         }
-        .content-section {
-            display: none; /* Hidden by default */
+        .header-bg {
+            background-image: linear-gradient(to right, #004d40, #00838f); /* Dark Teal to Blue-Green */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        .card-shadow {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08); /* Softer, more spread shadow */
+        }
+        .btn-primary {
+            background-color: #ffb300; /* Warm Gold */
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #e65100; /* Darker Gold */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .btn-language {
+            background-color: #ffffff;
+            color: #004d40; /* Match primary header color */
+            transition: all 0.3s ease;
+            border: 2px solid transparent; /* Add border for active state */
+            font-size: 1.125rem; /* text-lg */
+            padding: 0.75rem 1.5rem; /* px-6 py-3 */
+        }
+        .btn-language:hover {
+            background-color: #f0f2f5;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn-language.active {
+            background-color: #ffb300; /* Accent Warm Gold for active language */
+            color: white;
+            border-color: #e65100;
+            transform: scale(1.02);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .author-list li {
+            transition: all 0.2s ease;
+            color: #555; /* Slightly lighter text for authors */
+        }
+        .author-list li:hover {
+            background-color: #fcf8e3; /* Very light yellow hover for sidebar */
+            transform: translateX(3px);
+            color: #2c3e50;
+        }
+        .author-list li.active {
+            background-color: #ffb300; /* Warm Gold */
+            color: white;
+            font-weight: 600;
+        }
+        .book-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid #e0e0e0; /* Subtle border for cards */
+        }
+        .book-card:hover {
+            transform: translateY(-8px); /* More pronounced lift */
+            box-shadow: 0 18px 35px rgba(0, 0, 0, 0.18); /* Stronger shadow on hover */
+        }
+        .read-pdf-btn {
+            background-color: #00838f; /* Blue-Green */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .read-pdf-btn:hover {
+            background-color: #006064; /* Darker Blue-Green */
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .get-synopsis-btn {
+            background-color: #ffb300; /* Warm Gold */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .get-synopsis-btn:hover {
+            background-color: #e65100; /* Darker Gold */
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .suggestions-dropdown {
+            max-height: 200px;
+            overflow-y: auto;
+            border-top: none;
+            z-index: 20;
+        }
+        .suggestions-dropdown li {
+            padding: 10px 15px;
+            cursor: pointer;
+            text-align: left;
+            border-bottom: 1px solid #f0f2f5;
+            color: #333;
+        }
+        .suggestions-dropdown li:last-child {
+            border-bottom: none;
+        }
+        .suggestions-dropdown li:hover {
+            background-color: #e0e0e0;
+        }
+        .loading-indicator {
+            text-align: center;
+            padding: 10px;
+            color: #777;
+            font-style: italic;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
             opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
-        .content-section.active {
-            display: block; /* Shown when active */
+        .modal-overlay.show {
             opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            position: relative;
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.show .modal-content {
             transform: translateY(0);
         }
-        .nav-link.active {
-            font-weight: 700; /* Bold active link */
-            color: #bfdbfe; /* Lighter blue for active link */
-            background-color: rgba(255, 255, 255, 0.1); /* Subtle background for active link */
-            border-radius: 0.375rem; /* rounded-md */
-        }
-        .sub-nav-link.active {
-            font-weight: 600;
-            color: #1d4ed8; /* Darker blue for active sub-link */
-            background-color: #eff6ff; /* Lightest blue background */
-            border-left: 4px solid #3b82f6; /* Blue border on left */
-        }
-        .dropdown-menu {
-            display: none;
+        .modal-close-btn {
             position: absolute;
-            background-color: #3b82f6; /* Blue-600 */
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 0.375rem; /* rounded-md */
-            padding: 0.5rem 0;
-            top: 100%; /* Position below the parent nav item */
-            left: 0;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s ease;
         }
-        .dropdown:hover .dropdown-menu {
-            display: block;
+        .modal-close-btn:hover {
+            color: #333;
         }
-        .dropdown-menu a {
+
+        /* Custom Book Cover Style */
+        .book-cover-placeholder {
+            width: 100%;
+            height: 192px; /* h-48 equivalent */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.5rem; /* rounded-lg equivalent */
+            margin-bottom: 1rem; /* mb-4 equivalent */
             color: white;
-            padding: 8px 16px;
-            text-decoration: none;
-            display: block;
-            transition: background-color 0.3s ease;
+            font-size: 2rem; /* Slightly smaller text for initials */
+            font-weight: 600; /* Semi-bold */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.3);
+            background-image: linear-gradient(45deg, var(--start-color), var(--end-color));
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
         }
-        .dropdown-menu a:hover {
-            background-color: #2563eb; /* Blue-700 */
-        }
-        /* Style for the notice board items */
-        .notice-item {
-            background-color: #fff;
-            border-left: 4px solid #3b82f6; /* Blue accent */
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 0.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .notice-item strong {
-            color: #1e40af; /* Darker blue */
-        }
-        .notice-item span {
-            font-size: 0.875rem; /* text-sm */
-            color: #6b7280; /* gray-500 */
-            display: block;
-            margin-top: 0.25rem;
+
+        /* Responsive adjustments */
+        @media (min-width: 1024px) {
+            .lg\:sticky-sidebar {
+                position: sticky;
+                top: 20px; /* Adjust as needed for spacing from top */
+                align-self: flex-start; /* Aligns to the start of the flex container */
+            }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
-    <div id="app" class="min-h-screen flex flex-col">
-        <!-- Header Section -->
-        <header class="bg-gradient-to-r from-blue-700 to-blue-500 text-white p-4 shadow-xl rounded-b-xl">
-            <h1 class="text-3xl sm:text-5xl font-extrabold text-center tracking-wide">Learner</h1>
-            <p class="text-center text-sm sm:text-lg mt-2 opacity-90">Your Gateway to Academic Excellence (Classes V - X)</p>
-        </header>
 
-        <!-- Navigation Bar -->
-        <nav class="bg-blue-600 p-3 shadow-lg rounded-t-xl mt-4 mx-auto w-11/12 sm:w-full max-w-5xl">
-            <ul class="flex flex-wrap justify-center space-x-2 sm:space-x-4">
-                <li><a href="#home" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Home</a></li>
-                <li class="relative dropdown">
-                    <a href="#" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Classes &#9662;</a>
-                    <div class="dropdown-menu">
-                        <a href="#class-v" class="sub-nav-link" data-parent-section="classes">Class V</a>
-                        <a href="#class-vi" class="sub-nav-link" data-parent-section="classes">Class VI</a>
-                        <a href="#class-vii" class="sub-nav-link" data-parent-section="classes">Class VII</a>
-                        <a href="#class-viii" class="sub-nav-link" data-parent-section="classes">Class VIII</a>
-                        <a href="#class-ix" class="sub-nav-link" data-parent-section="classes">Class IX</a>
-                        <a href="#class-x" class="sub-nav-link" data-parent-section="classes">Class X</a>
-                    </div>
-                </li>
-                <li><a href="#resources" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Resources</a></li>
-                <li><a href="#contact" class="nav-link text-white hover:bg-blue-700 p-2 rounded-md transition duration-300 ease-in-out">Contact</a></li>
-            </ul>
-        </nav>
-
-        <!-- Main Content Area -->
-        <main class="flex-grow p-6 bg-gray-100 flex justify-center items-start">
-            <div class="w-full max-w-5xl">
-                <!-- Home Section -->
-                <section id="home" class="content-section active bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Welcome to Learner!</h2>
-                    <p class="text-gray-700 leading-relaxed text-lg mb-6 text-center">
-                        Your ultimate online companion for school studies, designed to help students from Class V to X
-                        excel academically. Dive into our rich collection of interactive quizzes, downloadable study
-                        materials, insightful video lessons, and a vibrant notice board for the latest updates.
-                    </p>
-
-                    <!-- Notice Board -->
-                    <div class="bg-blue-50 p-6 rounded-lg shadow-inner border border-blue-200">
-                        <h3 class="text-xl font-semibold text-blue-800 mb-4 flex items-center">
-                            <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            Notice Board
-                        </h3>
-                        <div class="space-y-3">
-                            <div class="notice-item">
-                                <strong>New Quiz Added: Class IX Science!</strong>
-                                <span>Date: July 10, 2025</span>
-                                <p class="text-gray-600 text-sm mt-1">A new comprehensive quiz for Class IX Science is now available in the Class IX section. Test your knowledge on new topics!</p>
-                            </div>
-                            <div class="notice-item">
-                                <strong>Summer Break Study Tips</strong>
-                                <span>Date: June 28, 2025</span>
-                                <p class="text-gray-600 text-sm mt-1">Check out our new article on effective study strategies for the summer break under the Resources section.</p>
-                            </div>
-                            <div class="notice-item">
-                                <strong>Website Maintenance Alert</strong>
-                                <span>Date: July 15, 2025 (8 PM - 10 PM IST)</span>
-                                <p class="text-gray-600 text-sm mt-1">Scheduled maintenance will occur tonight. Some features may be temporarily unavailable.</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Dynamic Class Sections (V to X) -->
-                <!-- Replicated for each class using JavaScript for dynamic content loading or explicit sections -->
-                <!-- For simplicity and static nature, I will explicitly create each section -->
-
-                <!-- Class V Section -->
-                <section id="class-v" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class V Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- Quizzes -->
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                Quizzes
-                            </h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-blue-600 hover:underline transition-colors duration-200">Math: Number System Basics</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline transition-colors duration-200">Science: Our Environment</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline transition-colors duration-200">English: Simple Sentences</a></li>
-                            </ul>
-                        </div>
-                        <!-- PDFs -->
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>
-                                PDFs
-                            </h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline transition-colors duration-200">Math: Addition & Subtraction Notes</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline transition-colors duration-200">Science: Animal Kingdom Summary</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline transition-colors duration-200">English: Nouns & Pronouns</a></li>
-                            </ul>
-                        </div>
-                        <!-- Videos -->
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>
-                                Video Lessons
-                            </h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline transition-colors duration-200">Math: Place Value Explained</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline transition-colors duration-200">Science: Photosynthesis Basics</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline transition-colors duration-200">English: Story Writing Tips</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Class VI Section -->
-                <section id="class-vi" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VI Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-blue-600 hover:underline">Math: Integers & Fractions</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline">Science: Separation of Substances</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Decimals Notes</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Body Movements</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Ratio & Proportion</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Light, Shadows & Reflections</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Class VII Section -->
-                <section id="class-vii" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VII Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="Africa quize.html" class="text-blue-600 hover:underline">Geography: Africa</a></li>
-                                <li><a href="Englishgrammervii quizze.html" class="text-blue-600 hover:underline">English: Grammer Quizze</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="africa assignment.pdf" target="_blank" class="text-green-600 hover:underline">Geography: Assignment On Africa</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Heat & Temperature</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Lines and Angles</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Acids, Bases and Salts</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Class VIII Section -->
-                <section id="class-viii" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class VIII Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-blue-600 hover:underline">Math: Squares & Square Roots</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline">Science: Crop Production & Management</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Cubes & Cube Roots</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Microorganisms</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Algebraic Expressions</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Force and Pressure</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Class IX Section -->
-                <section id="class-ix" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class IX Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-blue-600 hover:underline">Math: Number Systems</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline">Science: Motion</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Polynomials</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Force & Laws of Motion</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Coordinate Geometry</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Work and Energy</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Class X Section -->
-                <section id="class-x" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-blue-800 mb-6 text-center">Class X Study Materials</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="bg-blue-50 p-6 rounded-lg shadow-md border border-blue-200">
-                            <h3 class="font-bold text-xl text-blue-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>Quizzes</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-blue-600 hover:underline">Math: Real Numbers</a></li>
-                                <li><a href="#" class="text-blue-600 hover:underline">Science: Chemical Reactions & Equations</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-green-50 p-6 rounded-lg shadow-md border border-green-200">
-                            <h3 class="font-bold text-xl text-green-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.414L14.586 5A2 2 0 0115 6.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10V6h.5a1 1 0 00.707-.293l1.5-1.5A1 1 0 009.5 4H10v10H6z" clip-rule="evenodd"></path></svg>PDFs</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Math: Polynomials & Quadratic Equations</a></li>
-                                <li><a href="https://www.africau.edu/images/default/sample.pdf" target="_blank" class="text-green-600 hover:underline">Science: Acids, Bases & Salts</a></li>
-                            </ul>
-                        </div>
-                        <div class="bg-red-50 p-6 rounded-lg shadow-md border border-red-200">
-                            <h3 class="font-bold text-xl text-red-700 mb-4 flex items-center"><svg class="w-5 h-5 mr-2 text-red-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 10.47a.5.5 0 010 .86l-7.53 4.33a.5.5 0 01-.72-.43V5.57a.5.5 0 01.72-.43l7.53 4.33z"></path></svg>Video Lessons</h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Math: Trigonometry Introduction</a></li>
-                                <li><a href="https://www.youtube.com/embed/dQw4w9WgXcQ" target="_blank" class="text-red-600 hover:underline">Science: Electricity Basics</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Resources Section -->
-                <section id="resources" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Helpful Resources</h2>
-                    <p class="text-gray-700 mb-6 text-center">Explore these external links and tools to further enhance your learning journey.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-yellow-50 p-6 rounded-lg shadow-md border border-yellow-200">
-                            <h3 class="font-bold text-xl text-yellow-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12 7a1 1 0 11-2 0 1 1 0 012 0zM12 11a1 1 0 10-2 0v3a1 1 0 102 0v-3zM10 2a8 8 0 100 16 8 8 0 000-16z" clip-rule="evenodd"></path></svg>
-                                Educational Websites
-                            </h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="https://www.khanacademy.org/" target="_blank" class="text-yellow-600 hover:underline transition-colors duration-200">Khan Academy</a> - Free online courses for various subjects.</li>
-                                <li><a href="https://byjus.com/" target="_blank" class="text-yellow-600 hover:underline transition-colors duration-200">BYJU'S</a> - Personalized learning programs.</li>
-                                <li><a href="https://ncert.nic.in/" target="_blank" class="text-yellow-600 hover:underline transition-colors duration-200">NCERT Official Website</a> - Download textbooks and syllabi.</li>
-                            </ul>
-                        </div>
-                        <div class="bg-purple-50 p-6 rounded-lg shadow-md border border-purple-200">
-                            <h3 class="font-bold text-xl text-purple-700 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2 text-purple-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path></svg>
-                                Study Tools & Tips
-                            </h3>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2">
-                                <li><a href="#" class="text-purple-600 hover:underline transition-colors duration-200">Online Scientific Calculator</a> (Placeholder)</li>
-                                <li><a href="#" class="text-purple-600 hover:underline transition-colors duration-200">Interactive Periodic Table</a> (Placeholder)</li>
-                                <li><a href="#" class="text-purple-600 hover:underline transition-colors duration-200">Memory Techniques Guide</a> (Placeholder)</li>
-                            </ul>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Contact Section -->
-                <section id="contact" class="content-section bg-white p-8 rounded-xl shadow-2xl mb-8">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Get in Touch</h2>
-                    <p class="text-gray-700 mb-6 text-center">Have questions, suggestions, or feedback? We'd love to hear from you!</p>
-                    <form class="space-y-6 max-w-lg mx-auto">
-                        <div>
-                            <label for="name" class="block text-gray-700 text-sm font-semibold mb-2">Your Name:</label>
-                            <input type="text" id="name" name="name" class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" placeholder="Enter your name">
-                        </div>
-                        <div>
-                            <label for="email" class="block text-gray-700 text-sm font-semibold mb-2">Your Email:</label>
-                            <input type="email" id="email" name="email" class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" placeholder="Enter your email">
-                        </div>
-                        <div>
-                            <label for="message" class="block text-gray-700 text-sm font-semibold mb-2">Message:</label>
-                            <textarea id="message" name="message" rows="6" class="shadow-sm appearance-none border border-gray-300 rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200" placeholder="Type your message here..."></textarea>
-                        </div>
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out shadow-lg transform hover:scale-105">
-                            Send Message
-                        </button>
-                    </form>
-                    <p class="text-gray-500 text-sm mt-6 text-center"><i>Note: This is a static form and does not send emails. For a functional form, backend integration is required.</i></p>
-                </section>
+    <!-- Header Section -->
+    <header class="header-bg text-white py-10 px-4 shadow-lg">
+        <div class="container mx-auto text-center">
+            <!-- Logo Placeholder (Round Shape) -->
+            <img src="logo.jpeg" alt="Learner Logo" class="mx-auto mb-6 rounded-full shadow-md object-cover w-32 h-32">
+            
+            <h1 class="text-6xl font-extrabold mb-4 tracking-tight">Learner</h1>
+            <p class="text-2xl font-light opacity-90">Your Gateway to Knowledge</p>
+            
+            <!-- Language Selection Buttons -->
+            <div class="mt-10 flex flex-wrap justify-center space-x-4">
+                <button id="englishReaderBtn" class="btn-language rounded-full font-bold focus:outline-none focus:ring-4 focus:ring-blue-300 active">
+                    English Reader
+                </button>
+                <button id="bengaliReaderBtn" class="btn-language rounded-full font-bold focus:outline-none focus:ring-4 focus:ring-blue-300">
+                    Bengali Reader
+                </button>
             </div>
-        </main>
 
-        <!-- Footer Section -->
-        <footer class="bg-gray-900 text-white p-6 text-center text-sm rounded-t-xl mt-auto shadow-inner">
-            &copy; 2025 Learner. All rights reserved. Made with <span class="text-red-500">&#x2764;</span> for students.
-        </footer>
+            <!-- Search and Suggestions (Moved to Header, Smoother/Thinner) -->
+            <div class="search-wrapper relative mt-10 mx-auto max-w-2xl px-4">
+                <div class="flex flex-col sm:flex-row gap-3 bg-white p-2.5 rounded-full shadow-md">
+                    <input type="text" id="searchInput" placeholder="Search by book or author name..." class="flex-grow p-2.5 border-none rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400 text-base text-gray-800">
+                    <button id="searchButton" class="btn-primary text-white px-5 py-2 rounded-full font-semibold text-base flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        Search
+                    </button>
+                </div>
+                <ul id="suggestionsDropdown" class="suggestions-dropdown absolute w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 hidden">
+                    <!-- Suggestions will be loaded here -->
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="container mx-auto flex-grow py-12 px-4">
+        <div class="flex flex-col lg:flex-row gap-10">
+            <!-- Sidebar - Authors -->
+            <div class="lg:w-1/4 bg-white p-6 rounded-xl card-shadow lg:sticky-sidebar">
+                <h2 class="text-3xl font-semibold mb-6 border-b-4 border-yellow-600 pb-3">Authors</h2>
+                <ul id="authorList" class="author-list space-y-3">
+                    <li data-author="All" class="cursor-pointer p-3 rounded-lg text-xl font-medium active">All Books</li>
+                    <!-- Author names will be populated by JavaScript -->
+                </ul>
+            </div>
+
+            <!-- Book List Display -->
+            <div class="lg:w-3/4">
+                <div id="bookList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 min-h-96">
+                    <!-- Book cards will be populated by JavaScript -->
+                </div>
+                <div id="noResults" class="hidden text-center text-gray-600 text-3xl py-20 font-medium">No books found.</div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Synopsis Modal -->
+    <div id="synopsisModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+            <h2 id="synopsisModalTitle" class="text-3xl font-bold mb-4 text-gray-800"></h2>
+            <p id="synopsisModalText" class="text-gray-700 text-lg leading-relaxed"></p>
+        </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const navLinks = document.querySelectorAll('.nav-link');
-            const subNavLinks = document.querySelectorAll('.sub-nav-link');
-            const contentSections = document.querySelectorAll('.content-section');
+        // Data for Bengali Books
+        const bengaliBooks = [
+            { title: "পথের পাঁচালী", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.302660/2015.302660.Pather-Panchali.pdf" },
+            { title: "আরণ্যক", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.453018/2015.453018.Aaranyak.pdf" },
+            { title: "চোখের বালি", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://archive.org/download/in.ernet.dli.2015.356730/2015.302660.Chokher-Bali.pdf" },
+            { title: "গোরা", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://archive.org/download/in.ernet.dli.2015.290288/2015.290288.Gora.pdf" },
+            { title: "শেষের কবিতা", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://archive.org/download/in.ernet.dli.2015.456108/2015.456108.Shesher-Kabita.pdf" },
+            { title: "শ্রীকান্ত", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.457184/2015.457184.Shrikanta-Akhanda.pdf" },
+            { title: "চরিত্রহীন", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.456034/2015.456034.Charitrahin.pdf" },
+            { title: "পদ্মা নদীর মাঝি", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.amarbooks.org/download.php?id=17972" },
+            { title: "দিবারাত্রির কাব্য", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.512606/2015.512606.Dibaratrir-Kabya.pdf" },
+            { title: "ফেলুদা সমগ্র", writer: "সত্যজিৎ রায়", pdfLink: "https://www.google.com/search?q=ফেলুদা+সমগ্র+pdf+free+download" },
+            { title: "শঙ্কু সমগ্র", writer: "সত্যজিৎ রায়", pdfLink: "https://jyotirjagat.wordpress.com/wp-content/uploads/2015/07/satyajit-ray-professor-shanku-byomjatrir-diary.pdf" },
+            { title: "গণদেবতা", writer: "তারাশঙ্কর বন্দ্যোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.269098/2015.269098.Ganadevata.pdf" },
+            { title: "দুর্গেশনন্দিনী", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.457184/2015.457184.Durgeshnandini.pdf" },
+            { title: "কপালকুণ্ডলা", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.456034/2015.456034.Kapalkundala.pdf" },
+            { title: "মেঘনাদ বধ কাব্য", writer: "মাইকেল মধুসূদন দত্ত", pdfLink: "https://archive.org/download/in.ernet.dli.2015.269098/2015.269098.Meghnad-Badh-Kavya.pdf" },
+            { title: "বিষের বাঁশি", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=বিষের+বাঁশি+pdf+free+download" },
+            { title: "অগ্নিবীণা", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=অগ্নিবীণা+pdf+free+download" },
+            { title: "বনলতা সেন", writer: "জীবনানন্দ দাশ", pdfLink: "https://www.google.com/search?q=বনলতা+সেন+pdf+free+download" },
+            { title: "প্রথম আলো", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=প্রথম+আলো+pdf+free+download" },
+            { title: "সেই সময়", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=সেই+সময়+pdf+free+download" },
+            { title: "মনোজদের অদ্ভুত বাড়ি", writer: "শীর্ষেন্দু মুখোপাধ্যায়", pdfLink: "https://www.google.com/search?q=মনোজদের+অদ্ভুত+বাড়ি+pdf+free+download" },
+            { title: "গোঁসাইবাগানের ভূত", writer: "শীর্ষেন্দু মুখোপাধ্যায়", pdfLink: "https://www.google.com/search?q=গোঁসাইবাগানের+ভূত+pdf+free+download" },
+            { title: "কালবেলা", writer: "সমরেশ মজুমদার", pdfLink: "https://www.google.com/search?q=কালবেলা+pdf+free+download" },
+            { title: "উত্তরাধিকার", writer: "সমরেশ মজুমদার", pdfLink: "https://www.google.com/search?q=উত্তরাধিকার+pdf+free+download" },
+            { title: "প্রথম প্রতিশ্রুতি", writer: "আশাপূর্ণা দেবী", pdfLink: "https://www.google.com/search?q=প্রথম+প্রতিশ্রুতি+pdf+free+download" },
+            { title: "পথের দাবী", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.456034/2015.456034.Pather-Dabi.pdf" },
+            { title: "গৃহদাহ", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.457184/2015.457184.Grihadaha.pdf" },
+            { title: "দত্তা", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.456108/2015.456108.Datta.pdf" },
+            { title: "দেবদাস", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.290288/2015.290288.Devdas.pdf" },
+            { title: "শেষ প্রশ্ন", writer: "শরৎচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://archive.org/download/in.ernet.dli.2015.356730/2015.356730.Sesh-Prashna.pdf" },
+            { title: "আঁধার মানিক", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=আঁধার+মানিক+pdf+free+download" },
+            { title: "মৃত্যুক্ষুধা", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=মৃত্যুক্ষুধা+pdf+free+download" },
+            { title: "কুহেলিকা", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=কুহেলিকা+pdf+free+download" },
+            { title: "সঞ্চিতা", writer: "কাজী নজরুল ইসলাম", pdfLink: "https://www.google.com/search?q=সঞ্চিতা+pdf+free+download" },
+            { title: "চাঁদের পাহাড়", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=চাঁদের+পাহাড়+pdf+free+download" },
+            { title: "আদর্শ হিন্দু হোটেল", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=আদর্শ+হিন্দু+হোটেল+pdf+free+download" },
+            { title: "ইছামতী", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=ইছামতী+pdf+free+download" },
+            { title: "দেবযান", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=দেবযান+pdf+free+download" },
+            { title: "অপু ট্রিলজি (প্রথম খন্ড)", writer: "বিভূতিভূষণ বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=অপু+ট্রিলজি+pdf+free+download" },
+            { title: "যোগাযোগ", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=যোগাযোগ+pdf+free+download" },
+            { title: "নৌকাডুবি", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=নৌকাডুবি+pdf+free+download" },
+            { title: "চতুরঙ্গ", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=চতুরঙ্গ+pdf+free+download" },
+            { title: "ঘরে বাইরে", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=ঘরে+বাইরে+pdf+free+download" },
+            { title: "মালঞ্চ", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=মালঞ্চ+pdf+free+download" },
+            { title: "কাবুলিওয়ালা", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=কাবুলিওয়ালা+pdf+free+download" },
+            { title: "ক্ষুধিত পাষাণ", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=ক্ষুধিত+পাষাণ+pdf+free+download" },
+            { title: "পোস্টমাস্টার", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=পোস্টমাস্টার+pdf+free+download" },
+            { title: "নষ্টনীড়", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=নষ্টনীড়+pdf+free+download" },
+            { title: "গল্পগুচ্ছ", writer: "রবীন্দ্রনাথ ঠাকুর", pdfLink: "https://www.google.com/search?q=গল্পগুচ্ছ+pdf+free+download" },
+            { title: "পুতুলনাচের ইতিকথা", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=পুতুলনাচের+ইতিকথা+pdf+free+download" },
+            { title: "চতুষ্কোণ", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=চতুষ্কোণ+pdf+free+download" },
+            { title: "শহরতলী", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=শহরতলী+pdf+free+download" },
+            { title: "অহিংসা", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=অহিংসা+pdf+free+download" },
+            { title: "হলুদ নদী সবুজ বন", writer: "মানিক বন্দ্যোপাধ্যায়", pdfLink: "https://www.google.com/search?q=হলুদ+নদী+সবুজ+বন+pdf+free+download" },
+            { title: "অরণ্যের দিনরাত্রি", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=অরণ্যের+দিনরাত্রি+pdf+free+download" },
+            { title: "নীললোহিত সমগ্র", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=নীললোহিত+সমগ্র+pdf+free+download" },
+            { title: "কাকাবাবু সমগ্র", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=কাকাবাবু+সমগ্র+pdf+free+download" },
+            { title: "পূর্ব পশ্চিম", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=পূর্ব+পশ্চিম+pdf+free+download" },
+            { title: "জনারণ্যে", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=জনারণ্যে+pdf+free+download" },
+            { title: "তিমিরতীর্থ", writer: "সুনীল গঙ্গোপাধ্যায়", pdfLink: "https://www.google.com/search?q=তিমিরতীর্থ+pdf+free+download" },
+            { title: "শাবাশ লালটু", writer: "শীর্ষেন্দু মুখোপাধ্যায়", pdfLink: "https://www.google.com/search?q=শাবাশ+লালটু+pdf+free+download" },
+            { title: "পাগলা দাশু", writer: "সুকুমার রায়", pdfLink: "https://www.google.com/search?q=পাগলা+দাশু+pdf+free+download" },
+            { title: "হ-য-ব-র-ল", writer: "সুকুমার রায়", pdfLink: "https://www.google.com/search?q=হ-য-ব-র-ল+pdf+free+download" },
+            { title: "আবোল তাবোল", writer: "সুকুমার রায়", pdfLink: "https://www.google.com/search?q=আবোল+তাবোল+pdf+free+download" },
+            { title: "টুনটুনির বই", writer: "উপেন্দ্রকিশোর রায়চৌধুরী", pdfLink: "https://www.google.com/search?q=টুনটুনির+বই+pdf+free+download" },
+            { title: "গুপী গাইন বাঘা বাইন", writer: "উপেন্দ্রকিশোর রায়চৌধুরী", pdfLink: "https://www.google.com/search?q=গুপী+গাইন+বাঘা+বাইন+pdf+free+download" },
+            { title: "ঠাকুরমার ঝুলি", writer: "দক্ষিণারঞ্জন মিত্র মজুমদার", pdfLink: "https://www.google.com/search?q=ঠাকুরমার+ঝুলি+pdf+free+download" },
+            { title: "শ্রীমদ্ভগবদ্গীতা", writer: "বেদব্যাস", pdfLink: "https://www.google.com/search?q=শ্রীমদ্ভগবদ্গীতা+pdf+free+download" },
+            { title: "রামায়ণ", writer: "বাল্মীকি", pdfLink: "https://www.google.com/search?q=রামায়ণ+pdf+free+download" },
+            { title: "মহাভারত", writer: "বেদব্যাস", pdfLink: "https://www.google.com/search?q=মহাভারত+pdf+free+download" },
+            { title: "আনন্দমঠ", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=আনন্দমঠ+pdf+free+download" },
+            { title: "দেবী চৌধুরানী", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=দেবী+চৌধুরানী+pdf+free+download" },
+            { title: "কৃষ্ণকান্তের উইল", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=কৃষ্ণকান্তের+উইল+pdf+free+download" },
+            { title: "রাজসিংহ", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=রাজসিংহ+pdf+free+download" },
+            { title: "সীতারাম", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=সীতারাম+pdf+free+download" },
+            { title: "কমলাকান্তের দপ্তর", writer: "বঙ্কিমচন্দ্র চট্টোপাধ্যায়", pdfLink: "https://www.google.com/search?q=কমলাকান্তের+দপ্তর+pdf+free+download" },
+            { title: "আগুনের পরশমণি", writer: "আশাপূর্ণা দেবী", pdfLink: "https://www.google.com/search?q=আগুনের+পরশমণি+pdf+free+download" },
+            { title: "সুবর্ণলতা", writer: "আশাপূর্ণা দেবী", pdfLink: "https://www.google.com/search?q=সুবর্ণলতা+pdf+free+download" },
+            { title: "বকুল কথা", writer: "আশাপূর্ণা দেবী", pdfLink: "https://www.google.com/search?q=বকুল+কথা+pdf+free+download" },
+            { title: "একাত্তরের যীশু", writer: "শাহরিয়ার কবির", pdfLink: "https://www.google.com/search?q=একাত্তরের+যীশু+pdf+free+download" },
+            { title: "লালসালু", writer: "সৈয়দ ওয়ালীউল্লাহ", pdfLink: "https://www.google.com/search?q=লালসালু+pdf+free+download" },
+            { title: "হাজার বছর ধরে", writer: "জহির রায়হান", pdfLink: "https://www.google.com/search?q=হাজার+বছর+ধরে+pdf+free+download" },
+            { title: "তিতাস একটি নদীর নাম", writer: "অদ্বৈত মল্লবর্মণ", pdfLink: "https://www.google.com/search?q=তিতাস+একটি+নদীর+নাম+pdf+free+download" },
+            { title: "রাইফেল রোটি আওরাত", writer: "আনোয়ার পাশা", pdfLink: "https://www.google.com/search?q=রাইফেল+রোটি+আওরাত+pdf+free+download" },
+            { title: "চিলেকোঠার সেপাই", writer: "আখতারুজ্জামান ইলিয়াস", pdfLink: "https://www.google.com/search?q=চিলেকোঠার+সেপাই+pdf+free+download" },
+            { title: "খোয়াবনামা", writer: "আখতারুজ্জামান ইলিয়াস", pdfLink: "https://www.google.com/search?q=খোয়াবনামা+pdf+free+download" },
+            { title: "আমার ভাইয়ের রক্তে রাঙানো", writer: "আবদুল গাফফার চৌধুরী", pdfLink: "https://www.google.com/search?q=আমার+ভাইয়ের+রক্তে+রাঙানো+pdf+free+download" },
+            { title: "বরফ গলা নদী", writer: "জহির রায়হান", pdfLink: "https://www.google.com/search?q=বরফ+গলা+নদী+pdf+free+download" },
+            { title: "আগুনের পরশমণি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আগুনের+পরশমণি+pdf+free+download" },
+            { title: "জোছনা ও জননীর গল্প", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=জোছনা+ও+জননীর+গল্প+pdf+free+download" },
+            { title: "নন্দিত নরকে", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=নন্দিত+নরকে+pdf+free+download" },
+            { title: "শঙ্খনীল কারাগার", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=শঙ্খনীল+কারাগার+pdf+free+download" },
+            { title: "বাদশাহ নামদার", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=বাদশাহ+নামদার+pdf+free+download" },
+            { title: "মধ্যাহ্ন", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=মধ্যাহ্ন+pdf+free+download" },
+            { title: "মাতাল হাওয়া", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=মাতাল+হাওয়া+pdf+free+download" },
+            { title: "দেয়াল", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=দেয়াল+pdf+free+download" },
+            { title: "হিমু সমগ্র", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=হিমু+সমগ্র+pdf+free+download" },
+            { title: "মিসির আলি সমগ্র", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=মিসির+আলি+সমগ্র+pdf+free+download" },
+            { title: "কিশোর সমগ্র", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=কিশোর+সমগ্র+pdf+free+download" },
+            { title: "আমি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আমি+pdf+free+download" },
+            { title: "আমার আছে জল", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আমার+আছে+জল+pdf+free+download" },
+            { title: "বাদল দিনের দ্বিতীয় কদম ফুল", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=বাদল+দিনের+দ্বিতীয়+কদম+ফুল+pdf+free+download" },
+            { title: "লীলাবতী", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=লীলাবতী+pdf+free+download" },
+            { title: "সাজঘর", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=সাজঘর+pdf+free+download" },
+            { title: "মেঘ বলেছে যাবো যাবো", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=মেঘ+বলেছে+যাবো+যাবো+pdf+free+download" },
+            { title: "আজ রবিবার", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আজ+রবিবার+pdf+free+download" },
+            { title: "বহুব্রীহি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=বহুব্রীহি+pdf+free+download" },
+            { title: "কোথাও কেউ নেই", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=কোথাও+কেউ+নেই+pdf+free+download" },
+            { title: "নক্ষত্রের রাত", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=নক্ষত্রের+রাত+pdf+free+download" },
+            { title: "ফেরা", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=ফেরা+pdf+free+download" },
+            { title: "এইসব দিনরাত্রি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=এইসব+দিনরাত্রি+pdf+free+download" },
+            { title: "আকাশ ভরা সূর্য তারা", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আকাশ+ভরা+সূর্য+তারা+pdf+free+download" },
+            { title: "অন্যদিন", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=অন্যদিন+pdf+free+download" },
+            { title: "অপেক্ষা", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=অপেক্ষা+pdf+free+download" },
+            { title: "রূপা", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=রূপা+pdf+free+download" },
+            { title: "সাদা গাড়ি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=সাদা+গাড়ি+pdf+free+download" },
+            { title: "পাখি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=পাখি+pdf+free+download" },
+            { title: "চোর", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=চোর+pdf+free+download" },
+            { title: "বৃষ্টি বিলাস", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=বৃষ্টি+বিলাস+pdf+free+download" },
+            { title: "আজ আমি কোথাও যাব না", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আজ+আমি+কোথাও+যাব+না+pdf+free+download" },
+            { title: "নির্বাসন", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=নির্বাসন+pdf+free+download" },
+            { title: "অদ্ভুত সব গল্প", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=অদ্ভুত+সব+গল্প+pdf+free+download" },
+            { title: "ভূতের গল্প", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=ভূতের+গল্প+pdf+free+download" },
+            { title: "ছোটদের সেরা গল্প", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=ছোটদের+সেরা+গল্প+pdf+free+download" },
+            { title: "অন্য ভুবন", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=অন্য+ভুবন+pdf+free+download" },
+            { title: "আমার আপন ভুবন", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আমার+আপন+ভুবন+pdf+free+download" },
+            { title: "সবুজ ছায়া", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=সবুজ+ছায়া+pdf+free+download" },
+            { title: "এসেছে শরৎ", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=এসেছে+শরৎ+pdf+free+download" },
+            { title: "জোছনার ফুল", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=জোছনার+ফুল+pdf+free+download" },
+            { title: "আকাশ কুসুম", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আকাশ+কুসুম+pdf+free+download" },
+            { title: "কাঠপেন্সিল", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=কাঠপেন্সিল+pdf+free+download" },
+            { title: "আগুনের পরশমণি", writer: "হুমায়ূন আহমেদ", pdfLink: "https://www.google.com/search?q=আগুনের+পরশমণি+pdf+free+download" }
+        ];
 
-            // Function to show a specific section and update active links
-            const showSection = (id) => {
-                // Hide all sections
-                contentSections.forEach(section => {
-                    section.classList.remove('active');
-                });
+        // Data for English Books
+        const englishBooks = [
+            { title: "To Kill a Mockingbird", writer: "Harper Lee", pdfLink: "https://www.google.com/search?q=To+Kill+a+Mockingbird+pdf+free" },
+            { title: "1984", writer: "George Orwell", pdfLink: "https://www.google.com/search?q=1984+pdf+free" },
+            { title: "Pride and Prejudice", writer: "Jane Austen", pdfLink: "https://www.google.com/search?q=Pride+and+Prejudice+pdf+free" },
+            { title: "The Great Gatsby", writer: "F. Scott Fitzgerald", pdfLink: "https://www.google.com/search?q=The+Great+Gatsby+pdf+free" },
+            { title: "Moby Dick", writer: "Herman Melville", pdfLink: "https://www.google.com/search?q=Moby+Dick+pdf+free" },
+            { title: "Alice's Adventures in Wonderland", writer: "Lewis Carroll", pdfLink: "https://www.google.com/search?q=Alice%27s+Adventures+in+Wonderland+pdf+free" },
+            { title: "Frankenstein", writer: "Mary Shelley", pdfLink: "https://www.google.com/search?q=Frankenstein+pdf+free" },
+            { title: "The Adventures of Tom Sawyer", writer: "Mark Twain", pdfLink: "https://www.google.com/search?q=The+Adventures+of+Tom+Sawyer+pdf+free" },
+            { title: "Dracula", writer: "Bram Stoker", pdfLink: "https://www.google.com/search?q=Dracula+pdf+free" },
+            { title: "Jane Eyre", writer: "Charlotte Brontë", pdfLink: "https://www.google.com/search?q=Jane+Eyre+pdf+free" },
+            { title: "Wuthering Heights", writer: "Emily Brontë", pdfLink: "https://www.google.com/search?q=Wuthering+Heights+pdf+free" },
+            { title: "Great Expectations", writer: "Charles Dickens", pdfLink: "https://www.google.com/search?q=Great+Expectations+pdf+free" },
+            { title: "The Hobbit", writer: "J.R.R. Tolkien", pdfLink: "https://www.google.com/search?q=The+Hobbit+pdf+free" },
+            { title: "The Lord of the Rings", writer: "J.R.R. Tolkien", pdfLink: "https://www.google.com/search?q=The+Lord+of+the+Rings+pdf+free" },
+            { title: "And Then There Were None", writer: "Agatha Christie", pdfLink: "https://www.google.com/search?q=And+Then+There+Were+None+pdf+free" },
+            { title: "The Murder of Roger Ackroyd", writer: "Agatha Christie", pdfLink: "https://www.google.com/search?q=The+Murder+of+Roger+Ackroyd+pdf+free" },
+            { title: "A Study in Scarlet", writer: "Arthur Conan Doyle", pdfLink: "https://www.google.com/search?q=A+Study+in+Scarlet+pdf+free" },
+            { title: "The Hound of the Baskervilles", writer: "Arthur Conan Doyle", pdfLink: "https://www.google.com/search?q=The+Hound+of+the+Baskervilles+pdf+free" },
+            { title: "Sense and Sensibility", writer: "Jane Austen", pdfLink: "https://www.google.com/search?q=Sense+and+Sensibility+pdf+free" },
+            { title: "Emma", writer: "Jane Austen", pdfLink: "https://www.google.com/search?q=Emma+pdf+free" },
+            { title: "A Tale of Two Cities", writer: "Charles Dickens", pdfLink: "https://www.google.com/search?q=A+Tale+of+Two+Cities+pdf+free" },
+            { title: "Oliver Twist", writer: "Charles Dickens", pdfLink: "https://www.google.com/search?q=Oliver+Twist+pdf+free" },
+            { title: "Mrs Dalloway", writer: "Virginia Woolf", pdfLink: "https://www.google.com/search?q=Mrs+Dalloway+pdf+free" },
+            { title: "To the Lighthouse", writer: "Virginia Woolf", pdfLink: "https://www.google.com/search?q=To+the+Lighthouse+pdf+free" },
+            { title: "The Old Man and the Sea", writer: "Ernest Hemingway", pdfLink: "https://www.google.com/search?q=The+Old+Man+and+the+Sea+pdf+free" },
+            { title: "A Farewell to Arms", writer: "Ernest Hemingway", pdfLink: "https://www.google.com/search?q=A+Farewell+to+Arms+pdf+free" },
+            { title: "One Hundred Years of Solitude", writer: "Gabriel García Márquez", pdfLink: "https://www.google.com/search?q=One+Hundred+Years+of+Solitude+pdf+free" },
+            { title: "Love in the Time of Cholera", writer: "Gabriel García Márquez", pdfLink: "https://www.google.com/search?q=Love+in+the+Time+of+Cholera+pdf+free" },
+            { title: "The Catcher in the Rye", writer: "J.D. Salinger", pdfLink: "https://www.google.com/search?q=The+Catcher+in+the+Rye+pdf+free" },
+            { title: "The Lord of the Flies", writer: "William Golding", pdfLink: "https://www.google.com/search?q=The+Lord+of+the+Flies+pdf+free" },
+            { title: "Brave New World", writer: "Aldous Huxley", pdfLink: "https://www.google.com/search?q=Brave+New+World+pdf+free" },
+            { title: "The Grapes of Wrath", writer: "John Steinbeck", pdfLink: "https://www.google.com/search?q=The+Grapes+of+Wrath+pdf+free" },
+            { title: "Of Mice and Men", writer: "John Steinbeck", pdfLink: "https://www.google.com/search?q=Of+Mice+and+Men+pdf+free" },
+            { title: "The Picture of Dorian Gray", writer: "Oscar Wilde", pdfLink: "https://www.google.com/search?q=The+Picture+of+Dorian+Gray+pdf+free" },
+            { title: "Dr. Jekyll and Mr. Hyde", writer: "Robert Louis Stevenson", pdfLink: "https://www.google.com/search?q=Dr.+Jekyll+and+Mr.+Hyde+pdf+free" },
+            { title: "The Scarlet Letter", writer: "Nathaniel Hawthorne", pdfLink: "https://www.google.com/search?q=The+Scarlet+Letter+pdf+free" },
+            { title: "Wuthering Heights", writer: "Emily Brontë", pdfLink: "https://www.google.com/search?q=Wuthering+Heights+pdf+free" },
+            { title: "Frankenstein", writer: "Mary Shelley", pdfLink: "https://www.google.com/search?q=Frankenstein+pdf+free" },
+            { title: "Don Quixote", writer: "Miguel de Cervantes", pdfLink: "https://www.google.com/search?q=Don+Quixote+pdf+free" },
+            { title: "War and Peace", writer: "Leo Tolstoy", pdfLink: "https://www.google.com/search?q=War+and+Peace+pdf+free" },
+            { title: "Anna Karenina", writer: "Leo Tolstoy", pdfLink: "https://www.google.com/search?q=Anna+Karenina+pdf+free" },
+            { title: "Crime and Punishment", writer: "Fyodor Dostoevsky", pdfLink: "https://www.google.com/search?q=Crime+and+Punishment+pdf+free" },
+            { title: "The Brothers Karamazov", writer: "Fyodor Dostoevsky", pdfLink: "https://www.google.com/search?q=The+Brothers+Karamazov+pdf+free" },
+            { title: "Les Misérables", writer: "Victor Hugo", pdfLink: "https://www.google.com/search?q=Les+Mis%C3%A9rables+pdf+free" },
+            { title: "The Count of Monte Cristo", writer: "Alexandre Dumas", pdfLink: "https://www.google.com/search?q=The+Count+of+Monte+Cristo+pdf+free" },
+            { title: "Twenty Thousand Leagues Under the Seas", writer: "Jules Verne", pdfLink: "https://www.google.com/search?q=Twenty+Thousand+Leagues+Under+the+Seas+pdf+free" },
+            { title: "Journey to the Center of the Earth", writer: "Jules Verne", pdfLink: "https://www.google.com/search?q=Journey+to+the+Center+of+the+Earth+pdf+free" },
+            { title: "Around the World in Eighty Days", writer: "Jules Verne", pdfLink: "https://www.google.com/search?q=Around+the+World+in+Eighty+Days+pdf+free" },
+            { title: "The Odyssey", writer: "Homer", pdfLink: "https://www.google.com/search?q=The+Odyssey+pdf+free" },
+            { title: "The Iliad", writer: "Homer", pdfLink: "https://www.google.com/search?q=The+Iliad+pdf+free" },
+            { title: "Meditations", writer: "Marcus Aurelius", pdfLink: "https://www.google.com/search?q=Meditations+pdf+free" },
+            { title: "The Art of War", writer: "Sun Tzu", pdfLink: "https://www.google.com/search?q=The+Art+of+War+pdf+free" },
+            { title: "The Prince", writer: "Niccolò Machiavelli", pdfLink: "https://www.google.com/search?q=The+Prince+pdf+free" },
+            { title: "The Republic", writer: "Plato", pdfLink: "https://www.google.com/search?q=The+Republic+pdf+free" },
+            { title: "Discourse on Method", writer: "René Descartes", pdfLink: "https://www.google.com/search?q=Discourse+on+Method+pdf+free" },
+            { title: "Critique of Pure Reason", writer: "Immanuel Kant", pdfLink: "https://www.google.com/search?q=Critique+of+Pure+Reason+pdf+free" },
+            { title: "Thus Spoke Zarathustra", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Thus+Spoke+Zarathustra+pdf+free" },
+            { title: "Beyond Good and Evil", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Beyond+Good+and+Evil+pdf+free" },
+            { title: "The Communist Manifesto", writer: "Karl Marx, Friedrich Engels", pdfLink: "https://www.google.com/search?q=The+Communist+Manifesto+pdf+free" },
+            { title: "Das Kapital", writer: "Karl Marx", pdfLink: "https://www.google.com/search?q=Das+Kapital+pdf+free" },
+            { title: "On the Origin of Species", writer: "Charles Darwin", pdfLink: "https://www.google.com/search?q=On+the+Origin+of+Species+pdf+free" },
+            { title: "The Interpretation of Dreams", writer: "Sigmund Freud", pdfLink: "https://www.google.com/search?q=The+Interpretation+of+Dreams+pdf+free" },
+            { title: "Sapiens: A Brief History of Humankind", writer: "Yuval Noah Harari", pdfLink: "https://www.google.com/search?q=Sapiens+A+Brief+History+of+Humankind+pdf+free" },
+            { title: "Thinking, Fast and Slow", writer: "Daniel Kahneman", pdfLink: "https://www.google.com/search?q=Thinking+Fast+and+Slow+pdf+free" },
+            { title: "Cosmos", writer: "Carl Sagan", pdfLink: "https://www.google.com/search?q=Cosmos+pdf+free" },
+            { title: "A Brief History of Time", writer: "Stephen Hawking", pdfLink: "https://www.google.com/search?q=A+Brief+History+of+Time+pdf+free" },
+            { title: "The Hitchhiker's Guide to the Galaxy", writer: "Douglas Adams", pdfLink: "https://www.google.com/search?q=The+Hitchhiker%27s+Guide+to+the+Galaxy+pdf+free" },
+            { title: "Dune", writer: "Frank Herbert", pdfLink: "https://www.google.com/search?q=Dune+pdf+free" },
+            { title: "Foundation", writer: "Isaac Asimov", pdfLink: "https://www.google.com/search?q=Foundation+pdf+free" },
+            { title: "Neuromancer", writer: "William Gibson", pdfLink: "https://www.google.com/search?q=Neuromancer+pdf+free" },
+            { title: "The Martian Chronicles", writer: "Ray Bradbury", pdfLink: "https://www.google.com/search?q=The+Martian+Chronicles+pdf+free" },
+            { title: "Fahrenheit 451", writer: "Ray Bradbury", pdfLink: "https://www.google.com/search?q=Fahrenheit+451+pdf+free" },
+            { title: "The Chronicles of Narnia: The Lion, the Witch and the Wardrobe", writer: "C.S. Lewis", pdfLink: "https://www.google.com/search?q=The+Lion+the+Witch+and+the+Wardrobe+pdf+free" },
+            { title: "The Alchemist", writer: "Paulo Coelho", pdfLink: "https://www.google.com/search?q=The+Alchemist+pdf+free" },
+            { title: "The Little Prince", writer: "Antoine de Saint-Exupéry", pdfLink: "https://www.google.com/search?q=The+Little+Prince+pdf+free" },
+            { title: "Jonathan Livingston Seagull", writer: "Richard Bach", pdfLink: "https://www.google.com/search?q=Jonathan+Livingston+Seagull+pdf+free" },
+            { title: "Illusions: The Adventures of a Reluctant Messiah", writer: "Richard Bach", pdfLink: "https://www.google.com/search?q=Illusions+The+Adventures+of+a+Reluctant+Messiah+pdf+free" },
+            { title: "Siddhartha", writer: "Hermann Hesse", pdfLink: "https://www.google.com/search?q=Siddhartha+pdf+free" },
+            { title: "The Stranger", writer: "Albert Camus", pdfLink: "https://www.google.com/search?q=The+Stranger+pdf+free" },
+            { title: "The Myth of Sisyphus", writer: "Albert Camus", pdfLink: "https://www.google.com/search?q=The+Myth+of+Sisyphus+pdf+free" },
+            { title: "Thus Spoke Zarathustra", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Thus+Spoke+Zarathustra+pdf+free" },
+            { title: "Beyond Good and Evil", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Beyond+Good+and+Evil+pdf+free" },
+            { title: "The Genealogy of Morality", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=The+Genealogy+of+Morality+pdf+free" },
+            { title: "Twilight of the Idols", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Twilight+of+the+Idols+pdf+free" },
+            { title: "Ecce Homo", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Ecce+Homo+pdf+free" },
+            { title: "The Will to Power", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=The+Will+to+Power+pdf+free" },
+            { title: "Zarathustra's Prologue", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Zarathustra%27s+Prologue+pdf+free" },
+            { title: "Human, All Too Human", writer: "Friedrich Nietzsche", pdfLink: "https://www.google.com/search?q=Human+All+Too+Human+pdf+free" }
+        ];
 
-                // Deactivate all main nav links
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
 
-                // Deactivate all sub-nav links
-                subNavLinks.forEach(link => {
-                    link.classList.remove('active');
-                });
+        const bookListElement = document.getElementById('bookList');
+        const searchInput = document.getElementById('searchInput');
+        const authorListElement = document.getElementById('authorList');
+        const searchButton = document.getElementById('searchButton');
+        const suggestionsDropdown = document.getElementById('suggestionsDropdown');
+        const englishReaderBtn = document.getElementById('englishReaderBtn');
+        const bengaliReaderBtn = document.getElementById('bengaliReaderBtn');
+        const noResultsElement = document.getElementById('noResults');
 
-                // Show the target section
-                const targetSection = document.getElementById(id);
-                if (targetSection) {
-                    targetSection.classList.add('active');
+        // Synopsis Modal Elements
+        const synopsisModal = document.getElementById('synopsisModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const synopsisModalTitle = document.getElementById('synopsisModalTitle');
+        const synopsisModalText = document.getElementById('synopsisModalText');
+
+        let currentLanguage = 'english';
+        let currentBooks = englishBooks;
+        let currentAuthorFilter = 'All';
+        let debounceTimer;
+        let isAllAuthorsShown = false; // New state to track if all authors are shown
+        const MAX_INITIAL_AUTHORS = 5; // Max authors to show initially
+
+        const uiTexts = {
+            english: {
+                portalTitle: "Learner - Book Portal",
+                searchPlaceholder: "Search by book or author name...",
+                searchButton: "Search",
+                authorsTitle: "Authors",
+                allBooks: "All Books",
+                readPdf: "Read PDF",
+                searchPdf: "Search PDF",
+                getSynopsis: "✨ Get Synopsis",
+                noBooksFound: "No books found.",
+                loadingSuggestions: "Loading suggestions...",
+                failedToLoadSuggestions: "Failed to load suggestions.",
+                loadingSynopsis: "Generating synopsis...",
+                failedToLoadSynopsis: "Failed to load synopsis.",
+                synopsisTitle: "Synopsis for",
+                viewAllAuthors: "View All Authors"
+            },
+            bengali: {
+                portalTitle: "লার্নার - বইয়ের পোর্টাল",
+                searchPlaceholder: "বই বা লেখকের নাম দিয়ে খুঁজুন...",
+                searchButton: "অনুসন্ধান",
+                authorsTitle: "লেখকবৃন্দ",
+                allBooks: "সমস্ত বই",
+                readPdf: "PDF পড়ুন",
+                searchPdf: "PDF খুঁজুন",
+                getSynopsis: "✨ সারাংশ পান",
+                noBooksFound: "কোনো বই পাওয়া যায়নি।",
+                loadingSuggestions: "পরামর্শ লোড হচ্ছে...",
+                failedToLoadSuggestions: "পরামর্শ লোড করা যায়নি।",
+                loadingSynopsis: "সারাংশ তৈরি হচ্ছে...",
+                failedToLoadSynopsis: "সারাংশ লোড করা যায়নি।",
+                synopsisTitle: "সারাংশ:",
+                viewAllAuthors: "সমস্ত লেখক দেখুন"
+            }
+        };
+
+        // Function to generate a simple hash from a string
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return hash;
+        }
+
+        // Function to get a distinct HSL color based on a string
+        function getDistinctColorFromHash(str) {
+            const hash = hashCode(str);
+            const hue = Math.abs(hash) % 360; // Hue from 0 to 359
+            const saturation = 70 + (Math.abs(hash * 7) % 20); // Saturation between 70-90%
+            const lightness = 40 + (Math.abs(hash * 13) % 20); // Lightness between 40-60%
+
+            // Generate two slightly different colors for a gradient
+            const startColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            const endColor = `hsl(${(hue + 30) % 360}, ${saturation + 5}%, ${lightness - 5}%)`;
+
+            return { start: startColor, end: endColor };
+        }
+
+        /**
+         * Extracts initials or a short title fragment for the cover.
+         * @param {string} title - The full title of the book.
+         * @returns {string} Initials or fragment.
+         */
+        function getCoverText(title) {
+            const words = title.split(' ').filter(word => word.length > 0);
+            if (words.length === 1) {
+                return words[0].substring(0, 3).toUpperCase(); // First 3 letters of single word
+            } else if (words.length > 1) {
+                return words.map(word => word[0]).join('').substring(0, 2).toUpperCase(); // First two initials
+            }
+            return '';
+        }
+
+        /**
+         * Updates all static UI text based on the current language.
+         */
+        function updateUIText() {
+            const texts = uiTexts[currentLanguage];
+            document.title = texts.portalTitle;
+            document.querySelector('h1').textContent = texts.portalTitle.split(' - ')[0]; // Update main title
+            document.querySelector('p.opacity-90').textContent = texts.portalTitle.split(' - ')[1] || "Your Gateway to Knowledge"; // Update subtitle
+            searchInput.placeholder = texts.searchPlaceholder;
+            
+            // Update search button text, keeping the SVG icon
+            const searchSvg = `<svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>`;
+            searchButton.innerHTML = searchSvg + texts.searchButton;
+
+            document.querySelector('.lg\\:w-1\\/4 h2').textContent = texts.authorsTitle; // Update Authors title
+            
+            // This part is now handled dynamically in populateAuthors
+            // const allBooksLi = document.querySelector('[data-author="All"]');
+            // if (allBooksLi) {
+            //     allBooksLi.textContent = texts.allBooks;
+            // }
+            noResultsElement.textContent = texts.noBooksFound;
+
+            // Update text for existing "Read PDF" buttons and new "Get Synopsis" buttons
+            document.querySelectorAll('.book-card').forEach(card => {
+                const bookTitle = card.querySelector('h3').textContent;
+                const readPdfBtn = card.querySelector('.read-pdf-btn');
+                const getSynopsisBtn = card.querySelector('.get-synopsis-btn');
+
+                const isFeluda = (currentLanguage === 'english' && bookTitle.includes("Feluda Samagra")) ||
+                                 (currentLanguage === 'bengali' && bookTitle.includes("ফেলুদা সমগ্র"));
+                if (readPdfBtn) {
+                    readPdfBtn.textContent = isFeluda ? texts.searchPdf : texts.readPdf;
                 }
-
-                // Activate the corresponding main nav link
-                let activeNavLink = document.querySelector(`.nav-link[href="#${id}"]`);
-                if (activeNavLink) {
-                    activeNavLink.classList.add('active');
-                } else {
-                    // If it's a sub-nav link, find its parent nav link and activate both
-                    const activeSubNavLink = document.querySelector(`.sub-nav-link[href="#${id}"]`);
-                    if (activeSubNavLink) {
-                        activeSubNavLink.classList.add('active');
-                        const parentSectionId = activeSubNavLink.dataset.parentSection;
-                        if (parentSectionId) {
-                            const parentNavLink = document.querySelector(`.nav-link[href="#"]`); // The 'Classes' dropdown link
-                            if (parentNavLink) {
-                                parentNavLink.classList.add('active');
-                            }
-                        }
-                    }
+                if (getSynopsisBtn) {
+                    getSynopsisBtn.textContent = texts.getSynopsis;
                 }
-            };
-
-            // Add click event listeners to main navigation links
-            navLinks.forEach(link => {
-                link.addEventListener('click', (event) => {
-                    // Only prevent default if it's not the 'Classes' dropdown link
-                    if (event.target.getAttribute('href') !== '#') {
-                        event.preventDefault();
-                        const targetId = event.target.getAttribute('href').substring(1);
-                        showSection(targetId);
-                    }
-                });
             });
+        }
 
-            // Add click event listeners to sub-navigation links (for classes)
-            subNavLinks.forEach(link => {
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const targetId = event.target.getAttribute('href').substring(1);
-                    showSection(targetId);
-                });
+        /**
+         * Displays book cards based on the provided array of books.
+         * @param {Array<Object>} bookArray - An array of book objects to display.
+         */
+        function displayBooks(bookArray) {
+            bookListElement.innerHTML = '';
+            noResultsElement.classList.add('hidden');
+
+            if (bookArray.length === 0) {
+                noResultsElement.classList.remove('hidden');
+                return;
+            }
+            bookArray.forEach(book => {
+                const bookCard = document.createElement('div');
+                bookCard.classList.add('book-card', 'bg-white', 'p-4', 'rounded-xl', 'card-shadow', 'text-center', 'flex', 'flex-col', 'justify-between');
+                
+                const isFeluda = (currentLanguage === 'english' && book.title.includes("Feluda Samagra")) ||
+                                 (currentLanguage === 'bengali' && book.title.includes("ফেলুদা সমগ্র"));
+                const readPdfButtonText = isFeluda ? uiTexts[currentLanguage].searchPdf : uiTexts[currentLanguage].readPdf;
+                const getSynopsisButtonText = uiTexts[currentLanguage].getSynopsis;
+
+                const coverColors = getDistinctColorFromHash(book.title + book.writer); // Use both for more unique colors
+                const coverText = getCoverText(book.title);
+
+                bookCard.innerHTML = `
+                    <div class="book-cover-placeholder" style="--start-color: ${coverColors.start}; --end-color: ${coverColors.end};">
+                        ${coverText}
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2">${book.title}</h3>
+                    <p class="text-gray-600 italic mb-4">Author: ${book.writer}</p>
+                    <div class="flex flex-col space-y-2">
+                        <a href="${book.pdfLink}" target="_blank" class="read-pdf-btn text-white px-5 py-2 rounded-full font-semibold text-lg inline-block self-center">
+                            ${readPdfButtonText}
+                        </a>
+                        <button class="get-synopsis-btn bg-yellow-600 text-white px-5 py-2 rounded-full font-semibold text-lg inline-block self-center hover:bg-yellow-700 transition-colors duration-300"
+                                data-title="${book.title}" data-author="${book.writer}">
+                            ${getSynopsisButtonText}
+                        </button>
+                    </div>
+                `;
+                bookListElement.appendChild(bookCard);
             });
+            addSynopsisButtonListeners(); // Add listeners after books are displayed
+        }
 
-            // Show the initial section based on URL hash or default to 'home'
-            const initialHash = window.location.hash.substring(1);
-            if (initialHash && document.getElementById(initialHash)) {
-                showSection(initialHash);
+        /**
+         * Filters and displays books based on current search term and author filter.
+         */
+        function filterAndSearchBooks() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const booksToFilter = currentBooks;
+
+            const filteredBooks = booksToFilter.filter(book => {
+                const matchesAuthor = currentAuthorFilter === 'All' || book.writer.toLowerCase().includes(currentAuthorFilter.toLowerCase());
+                const matchesSearch = book.title.toLowerCase().includes(searchTerm) || book.writer.toLowerCase().includes(searchTerm);
+                return matchesAuthor && matchesSearch;
+            });
+            displayBooks(filteredBooks);
+            hideSuggestions();
+        }
+
+        /**
+         * Populates the author list in the sidebar, with "View All" functionality.
+         */
+        function populateAuthors() {
+            authorListElement.innerHTML = ''; // Clear existing authors
+
+            // Add "All Books" option
+            const allBooksLi = document.createElement('li');
+            allBooksLi.textContent = uiTexts[currentLanguage].allBooks;
+            allBooksLi.dataset.author = "All";
+            allBooksLi.classList.add('cursor-pointer', 'p-3', 'rounded-lg', 'text-xl', 'font-medium');
+            allBooksLi.addEventListener('click', () => {
+                currentAuthorFilter = 'All';
+                filterAndSearchBooks();
+                updateAuthorListActiveState(allBooksLi);
+                isAllAuthorsShown = false; // Reset to show initial authors when "All Books" is clicked
+                populateAuthors(); // Re-populate to show initial view if applicable
+            });
+            authorListElement.appendChild(allBooksLi);
+
+            const allUniqueAuthors = [...new Set(currentBooks.map(book => book.writer))].sort();
+            
+            let authorsToDisplay = [];
+            if (isAllAuthorsShown) {
+                authorsToDisplay = allUniqueAuthors;
             } else {
-                showSection('home'); // Default to home section
+                authorsToDisplay = allUniqueAuthors.slice(0, MAX_INITIAL_AUTHORS);
+            }
+
+            authorsToDisplay.forEach(author => {
+                const li = document.createElement('li');
+                li.textContent = author;
+                li.dataset.author = author;
+                li.classList.add('cursor-pointer', 'p-3', 'rounded-lg', 'text-xl', 'font-medium');
+                li.addEventListener('click', () => {
+                    currentAuthorFilter = author;
+                    filterAndSearchBooks();
+                    updateAuthorListActiveState(li);
+                });
+                authorListElement.appendChild(li);
+            });
+
+            // Add "View All Authors" button if not all authors are shown and there are more
+            if (!isAllAuthorsShown && allUniqueAuthors.length > MAX_INITIAL_AUTHORS) {
+                const viewAllLi = document.createElement('li');
+                viewAllLi.textContent = uiTexts[currentLanguage].viewAllAuthors;
+                viewAllLi.classList.add('cursor-pointer', 'p-3', 'rounded-lg', 'text-xl', 'font-medium', 'text-center', 'bg-gray-100', 'hover:bg-gray-200', 'mt-4');
+                viewAllLi.addEventListener('click', () => {
+                    isAllAuthorsShown = true;
+                    populateAuthors(); // Re-populate to show all authors
+                    updateAuthorListActiveState(allBooksLi); // Keep "All Books" active visually
+                });
+                authorListElement.appendChild(viewAllLi);
+            }
+
+            // Ensure "All Books" is active by default or if a specific author was selected before refresh
+            const activeAuthorElement = document.querySelector(`[data-author="${currentAuthorFilter}"]`);
+            if (activeAuthorElement) {
+                updateAuthorListActiveState(activeAuthorElement);
+            } else {
+                updateAuthorListActiveState(allBooksLi);
+            }
+        }
+
+        /**
+         * Updates the active state of the author list items.
+         * @param {HTMLElement} activeElement - The currently active list item.
+         */
+        function updateAuthorListActiveState(activeElement) {
+            document.querySelectorAll('.author-list li').forEach(li => {
+                li.classList.remove('active');
+            });
+            activeElement.classList.add('active');
+        }
+
+        /**
+         * Fetches suggestions from Gemini API based on the search term and current language.
+         * @param {string} searchTerm - The current value of the search input.
+         */
+        async function fetchSuggestions(searchTerm) {
+            if (searchTerm.length < 2) {
+                hideSuggestions();
+                return;
+            }
+
+            suggestionsDropdown.innerHTML = `<li class="loading-indicator">${uiTexts[currentLanguage].loadingSuggestions}</li>`;
+            suggestionsDropdown.classList.remove('hidden');
+
+            try {
+                let chatHistory = [];
+                const languageQuery = currentLanguage === 'english' ? 'English' : 'Bengali';
+                const prompt = `Suggest 5 ${languageQuery} writer or book names similar to "${searchTerm}" for a book portal. Return only the names, one per line, without any numbering or additional text.`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const text = result.candidates[0].content.parts[0].text;
+                    const suggestions = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+                    displaySuggestions(suggestions);
+                } else {
+                    displaySuggestions([]);
+                }
+            } catch (error) {
+                console.error('Error fetching suggestions from Gemini:', error);
+                suggestionsDropdown.innerHTML = `<li class="loading-indicator">${uiTexts[currentLanguage].failedToLoadSuggestions}</li>`;
+            }
+        }
+
+        /**
+         * Displays the fetched suggestions in the dropdown.
+         * @param {Array<string>} suggestions - An array of suggestion strings.
+         */
+        function displaySuggestions(suggestions) {
+            suggestionsDropdown.innerHTML = '';
+            if (suggestions.length === 0) {
+                hideSuggestions();
+                return;
+            }
+            suggestions.forEach(suggestion => {
+                const li = document.createElement('li');
+                li.textContent = suggestion;
+                li.addEventListener('click', () => {
+                    searchInput.value = suggestion;
+                    filterAndSearchBooks();
+                    hideSuggestions();
+                });
+                suggestionsDropdown.appendChild(li);
+            });
+            suggestionsDropdown.classList.remove('hidden');
+        }
+
+        /**
+         * Hides the suggestions dropdown.
+         */
+        function hideSuggestions() {
+            suggestionsDropdown.classList.add('hidden');
+            suggestionsDropdown.innerHTML = '';
+        }
+
+        /**
+         * Switches the portal content to the selected language.
+         * @param {string} lang - 'english' or 'bengali'.
+         */
+        function switchLanguage(lang) {
+            currentLanguage = lang;
+            currentBooks = (lang === 'english') ? englishBooks : bengaliBooks;
+            currentAuthorFilter = 'All';
+            searchInput.value = '';
+            isAllAuthorsShown = false; // Reset view when language changes
+
+            populateAuthors(); 
+            updateUIText();
+            filterAndSearchBooks();
+            updateLanguageButtonStates();
+        }
+
+        /**
+         * Updates the active state of the language buttons.
+         */
+        function updateLanguageButtonStates() {
+            englishReaderBtn.classList.remove('active');
+            bengaliReaderBtn.classList.remove('active');
+            if (currentLanguage === 'english') {
+                englishReaderBtn.classList.add('active');
+            } else {
+                bengaliReaderBtn.classList.add('active');
+            }
+        }
+
+        /**
+         * Shows the synopsis modal with loading indicator.
+         */
+        function showSynopsisModal(title) {
+            synopsisModalTitle.textContent = `${uiTexts[currentLanguage].synopsisTitle} ${title}`;
+            synopsisModalText.innerHTML = `<p class="loading-indicator">${uiTexts[currentLanguage].loadingSynopsis}</p>`;
+            synopsisModal.classList.add('show');
+        }
+
+        /**
+         * Hides the synopsis modal.
+         */
+        function hideSynopsisModal() {
+            synopsisModal.classList.remove('show');
+            synopsisModalTitle.textContent = '';
+            synopsisModalText.innerHTML = '';
+        }
+
+        /**
+         * Fetches book synopsis from Gemini API.
+         * @param {string} title - The title of the book.
+         * @param {string} author - The author of the book.
+         */
+        async function fetchBookSynopsis(title, author) {
+            showSynopsisModal(title);
+            try {
+                let chatHistory = [];
+                const languageQuery = currentLanguage === 'english' ? 'English' : 'Bengali';
+                const prompt = `Provide a concise, 2-3 sentence summary of the book "${title}" by ${author} in ${languageQuery}.`;
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+                const payload = { contents: chatHistory };
+                const apiKey = ""; // Canvas will provide this at runtime
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const synopsis = result.candidates[0].content.parts[0].text;
+                    synopsisModalText.textContent = synopsis;
+                } else {
+                    synopsisModalText.textContent = uiTexts[currentLanguage].failedToLoadSynopsis;
+                }
+            } catch (error) {
+                console.error('Error fetching synopsis from Gemini:', error);
+                synopsisModalText.textContent = uiTexts[currentLanguage].failedToLoadSynopsis;
+            }
+        }
+
+        /**
+         * Adds event listeners to all "Get Synopsis" buttons.
+         * This function should be called after `displayBooks` to ensure buttons exist.
+         */
+        function addSynopsisButtonListeners() {
+            document.querySelectorAll('.get-synopsis-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const title = event.target.dataset.title;
+                    const author = event.target.dataset.author;
+                    fetchBookSynopsis(title, author);
+                });
+            });
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            if (searchInput.value.trim().length > 0) {
+                debounceTimer = setTimeout(() => {
+                    fetchSuggestions(searchInput.value.trim());
+                }, 300);
+            } else {
+                hideSuggestions();
+                filterAndSearchBooks();
             }
         });
+
+        searchButton.addEventListener('click', filterAndSearchBooks);
+
+        document.addEventListener('click', (event) => {
+            if (!event.target.closest('.search-wrapper')) {
+                hideSuggestions();
+            }
+        });
+
+        englishReaderBtn.addEventListener('click', () => switchLanguage('english'));
+        bengaliReaderBtn.addEventListener('click', () => switchLanguage('bengali'));
+        closeModalBtn.addEventListener('click', hideSynopsisModal);
+        synopsisModal.addEventListener('click', (event) => {
+            if (event.target === synopsisModal) { // Close when clicking outside content
+                hideSynopsisModal();
+            }
+        });
+
+        // Initial rendering on page load (default to English)
+        switchLanguage('english');
     </script>
+
 </body>
 </html>
