@@ -108,7 +108,7 @@
     import { getFirestore, doc, setDoc, getDoc, addDoc, collection, onSnapshot, deleteDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
     import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js';
 
-    // --- CONFIG: your latest project ---
+    // --- CONFIG ---
     const firebaseConfig = {
       apiKey: "AIzaSyA9A2J5doC_q6cjI4UwnkSAsvIJ6ZYWxXs",
       authDomain: "eduvlog-ce6e2.firebaseapp.com",
@@ -173,7 +173,6 @@
       if(!name || !email || pw.length < 6){ rMsg.textContent = 'Enter name, valid email and password (min 6 chars).'; return }
       try{
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        // save user profile (no role field)
         await setDoc(doc(db, 'users', cred.user.uid), { name, email });
         rMsg.textContent = 'Registered ✅';
       }catch(err){ rMsg.textContent = err.message }
@@ -189,40 +188,32 @@
       catch(err){ siMsg.textContent = err.message }
     });
 
-    // Sign-out handler delegated later
-
-    // Helper: check teacher collection existence
     async function checkIsTeacher(uid){
       if(!uid) return false;
       const tdoc = await getDoc(doc(db, 'teacher', uid));
       return tdoc.exists();
     }
 
-    // on auth change
     onAuthStateChanged(auth, async (user)=>{
       currentUser = user;
       if(user){
-        // fetch profile
         const prof = await getDoc(doc(db,'users', user.uid));
         currentName = prof.exists() ? (prof.data().name || user.email) : user.email;
         isTeacher = await checkIsTeacher(user.uid);
-        // show UI
         authArea.style.display='none';
         appArea.style.display='block';
         userPanel.innerHTML = `<span style="margin-right:12px">Welcome, <strong>${escapeHtml(currentName)}</strong> (${isTeacher? 'teacher':'student'})</span><button id=btnLogout class="small secondary">Logout</button>`;
         document.getElementById('btnLogout').addEventListener('click', ()=> signOut(auth));
         teacherPanel.style.display = isTeacher? 'block':'none';
         welcomeText.innerHTML = `<div class="muted">Signed in as</div><div style="font-weight:700">${escapeHtml(currentName)} — ${isTeacher? 'Teacher' : 'Student'}</div>`;
-        // load posts & activity
         loadPosts(); loadActivity();
       } else {
-        // show auth
         currentName=''; isTeacher=false;
         authArea.style.display='block'; appArea.style.display='none'; userPanel.innerHTML='';
       }
     });
 
-    // Publish post (teacher only)
+    // Publish post
     btnPublish.addEventListener('click', async ()=>{
       if(!currentUser) return alert('Sign in first');
       if(!isTeacher) return alert('Only teachers can publish');
@@ -230,9 +221,7 @@
       const content = postContent.value.trim();
       if(!title){ return alert('Title required') }
       try{
-        // create post doc first to get id
         const newDocRef = await addDoc(collection(db,'posts'), { title, content, type: postType.value, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName });
-        // if file attached, upload to storage and update doc with fileURL
         const f = postFile.files && postFile.files[0];
         if(f){
           const path = `posts/${newDocRef.id}/${Date.now()}_${sanitizeFilename(f.name)}`;
@@ -245,7 +234,7 @@
       }catch(err){ alert('Failed to publish: '+err.message) }
     });
 
-    // load posts in real-time
+    // load posts
     function loadPosts(){
       const q = query(collection(db,'posts'), orderBy('created','desc'));
       onSnapshot(q, snap=>{
@@ -269,7 +258,12 @@
           // file link
           if(p.fileUrl){
             const fl = document.createElement('div'); fl.className='file-list';
-            const a = document.createElement('a'); a.href = p.fileUrl; a.target='_blank'; a.className='download'; a.textContent = '📥 '+p.fileName;
+            const a = document.createElement('a'); 
+            a.href = p.fileUrl; 
+            a.target='_blank'; 
+            a.className='download'; 
+            a.textContent = '📥 '+p.fileName;
+            a.setAttribute('download', p.fileName); // enable download
             fl.appendChild(a); el.appendChild(fl);
           }
 
@@ -281,18 +275,16 @@
             ctr.appendChild(del);
           }
 
-          // student submission UI for assignments
+          // assignments
           if(p.type==='assignment'){
             const subDiv = document.createElement('div'); subDiv.style.marginTop='10px';
             if(!isTeacher){
-              // show submit form
               subDiv.innerHTML = `<input type="file" class="subFile" /><textarea class="subText" placeholder="Add notes (optional)" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #e6eef8"></textarea><div style="margin-top:6px"><button class="submitBtn">Submit Assignment</button></div>`;
               const submitBtn = subDiv.querySelector('.submitBtn');
               submitBtn.addEventListener('click', async ()=>{
                 const fileInput = subDiv.querySelector('.subFile');
                 const text = subDiv.querySelector('.subText').value;
                 try{
-                  // upload file if present
                   let fileInfo = null;
                   if(fileInput.files && fileInput.files[0]){
                     const f = fileInput.files[0];
@@ -308,7 +300,6 @@
                 }catch(err){ alert('Submit failed: '+err.message) }
               });
             } else {
-              // teacher sees submissions link
               const view = document.createElement('div');
               view.innerHTML = `<button class="small">View submissions</button>`;
               view.querySelector('button').addEventListener('click', ()=> showSubmissionsForPost(p.id));
@@ -317,25 +308,64 @@
             el.appendChild(subDiv);
           }
 
+          // comments for general posts
+          if(p.type==='general'){
+            const cDiv = document.createElement('div'); 
+            cDiv.style.marginTop='10px';
+            if(currentUser){
+              cDiv.innerHTML = `
+                <textarea class="cText" placeholder="Write a comment..." 
+                  style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #e6eef8"></textarea>
+                <div style="margin-top:6px">
+                  <button class="cBtn">Post Comment</button>
+                </div>
+                <div class="cList" style="margin-top:10px"></div>
+              `;
+              const cBtn = cDiv.querySelector('.cBtn');
+              const cText = cDiv.querySelector('.cText');
+              const cList = cDiv.querySelector('.cList');
+              cBtn.addEventListener('click', async ()=>{
+                const text = cText.value.trim();
+                if(!text) return;
+                try{
+                  await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text, created: serverTimestamp() });
+                  cText.value='';
+                }catch(err){ alert('Failed: '+err.message) }
+              });
+              const cq = query(collection(db,'comments'), orderBy('created','asc'));
+              onSnapshot(cq, snap=>{
+                cList.innerHTML='';
+                snap.forEach(d=>{
+                  const cm = d.data();
+                  if(cm.postId === p.id){
+                    const cmEl = document.createElement('div');
+                    cmEl.className='muted';
+                    cmEl.style.marginBottom='6px';
+                    cmEl.innerHTML = `<strong>${escapeHtml(cm.name||'')}</strong>: ${escapeHtml(cm.text||'')}`;
+                    cList.appendChild(cmEl);
+                  }
+                });
+              });
+            }
+            el.appendChild(cDiv);
+          }
+
           postsList.appendChild(el);
         });
       });
     }
 
-    // show submissions for a post (teacher)
     function showSubmissionsForPost(postId){
       const q = query(collection(db,'submissions'), orderBy('created','desc'));
       onSnapshot(q, snap=>{
-        // filter by postId
         const subs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(s=>s.postId===postId);
-        // render modal-like simple overlay
         const overlay = document.createElement('div'); overlay.style.position='fixed'; overlay.style.left=0; overlay.style.top=0; overlay.style.width='100%'; overlay.style.height='100%'; overlay.style.background='rgba(0,0,0,0.5)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center';
         const box = document.createElement('div'); box.style.background='#fff'; box.style.padding='18px'; box.style.borderRadius='12px'; box.style.maxWidth='800px'; box.style.width='90%'; box.style.maxHeight='80%'; box.style.overflow='auto';
         box.innerHTML = `<h3>Submissions for post</h3>`;
         subs.forEach(s=>{
           const d = document.createElement('div'); d.className='card'; d.style.marginBottom='8px';
           d.innerHTML = `<div><strong>${escapeHtml(s.name||s.uid)}</strong> • <span class="muted">${s.created && s.created.toDate? s.created.toDate().toLocaleString() : ''}</span></div><div style="margin-top:6px">${escapeHtml(s.text||'')}</div>`;
-          if(s.fileUrl){ const a = document.createElement('a'); a.href=s.fileUrl; a.target='_blank'; a.className='download'; a.textContent='📥 '+s.fileName; d.appendChild(a); }
+          if(s.fileUrl){ const a = document.createElement('a'); a.href=s.fileUrl; a.target='_blank'; a.className='download'; a.textContent='📥 '+s.fileName; a.setAttribute('download', s.fileName); d.appendChild(a); }
           if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.style.marginLeft='8px'; del.textContent='Delete Submission'; del.onclick = ()=> deleteSubmission(s.id, s.filePath); d.appendChild(del); }
           box.appendChild(d);
         });
@@ -345,7 +375,6 @@
       });
     }
 
-    // load activity (simple)
     function loadActivity(){
       onSnapshot(collection(db,'activity'), snap=>{
         activityList.innerHTML='';
@@ -353,18 +382,15 @@
       });
     }
 
-    // delete post (teacher only) - also delete storage file if exists
     async function deletePost(postId, filePath){
       if(!confirm('Delete this post?')) return;
       try{
-        // delete storage file if provided
         if(filePath){ const fRef = storageRef(storage, filePath); await deleteObject(fRef).catch(()=>{}); }
         await deleteDoc(doc(db,'posts',postId));
         alert('Post deleted');
       }catch(err){ alert('Delete failed: '+err.message) }
     }
 
-    // delete submission
     async function deleteSubmission(subId, filePath){
       if(!confirm('Delete this submission?')) return;
       try{
@@ -374,11 +400,9 @@
       }catch(err){ alert('Delete failed: '+err.message) }
     }
 
-    // helpers
     function nl2br(s){ return s.replace(/\n/g,'<br/>'); }
     function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]+/g, function(match){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[match]) }); }
     function sanitizeFilename(name){ return name.replace(/[^a-zA-Z0-9._-]/g,'_'); }
-
   </script>
 </body>
 </html>
