@@ -31,6 +31,7 @@
     .tab{padding:8px 12px;border-radius:8px;cursor:pointer}
     .tab.active{background:#eef2ff}
     footer{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+    .replyBox{margin-left:14px;margin-top:6px}
   </style>
 </head>
 <body>
@@ -78,7 +79,10 @@
             <label>Type<select id="postType"><option value="notice">Notice</option><option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="general">General</option></select></label>
             <label>Title<input id="postTitle" /></label>
             <label>Content<textarea id="postContent" rows="4"></textarea></label>
-            <label>Attach file<input id="postFile" type="file" /></label>
+
+            <!-- CHANGED: teacher should paste a drive/link instead of uploading a file -->
+            <label>Attach Document Link<input id="postLink" placeholder="Paste Google Drive link here" /></label>
+
             <div style="display:flex;gap:8px;margin-top:12px">
               <button id="btnPublish">Publish</button>
             </div>
@@ -149,7 +153,9 @@
     const postType = document.getElementById('postType');
     const postTitle = document.getElementById('postTitle');
     const postContent = document.getElementById('postContent');
-    const postFile = document.getElementById('postFile');
+
+    // CHANGED: replaced file input reference with link input for teacher posts
+    const postLink = document.getElementById('postLink');
 
     const btnSignIn = document.getElementById('btnSignIn');
     const btnRegister = document.getElementById('btnRegister');
@@ -219,18 +225,12 @@
       if(!isTeacher) return alert('Only teachers can publish');
       const title = postTitle.value.trim();
       const content = postContent.value.trim();
+      const link = postLink.value.trim(); // teacher-provided link
       if(!title){ return alert('Title required') }
       try{
-        const newDocRef = await addDoc(collection(db,'posts'), { title, content, type: postType.value, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName });
-        const f = postFile.files && postFile.files[0];
-        if(f){
-          const path = `posts/${newDocRef.id}/${Date.now()}_${sanitizeFilename(f.name)}`;
-          const sRef = storageRef(storage, path);
-          await uploadBytes(sRef, f);
-          const url = await getDownloadURL(sRef);
-          await setDoc(doc(db,'posts', newDocRef.id), { title, content, type: postType.value, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName, fileName: f.name, filePath: path, fileUrl: url }, { merge: true });
-        }
-        postTitle.value=''; postContent.value=''; postFile.value='';
+        // store link (if provided) in the post doc; no storage upload for teacher side
+        await addDoc(collection(db,'posts'), { title, content, type: postType.value, link: link || null, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName });
+        postTitle.value=''; postContent.value=''; postLink.value='';
       }catch(err){ alert('Failed to publish: '+err.message) }
     });
 
@@ -255,15 +255,23 @@
             <div style="margin-top:8px">${nl2br(escapeHtml(p.content||''))}</div>
           `;
 
-          // file link
-          if(p.fileUrl){
+          // show teacher-provided link first (Drive/URL). fallback to fileUrl if present (legacy)
+          if(p.link){
             const fl = document.createElement('div'); fl.className='file-list';
-            const a = document.createElement('a'); 
-            a.href = p.fileUrl; 
-            a.target='_blank'; 
-            a.className='download'; 
-            a.textContent = '📥 '+p.fileName;
-            a.setAttribute('download', p.fileName); // enable download
+            const a = document.createElement('a');
+            a.href = p.link;
+            a.target = '_blank';
+            a.className = 'download';
+            a.textContent = '🔗 Open Document';
+            fl.appendChild(a); el.appendChild(fl);
+          } else if(p.fileUrl){
+            const fl = document.createElement('div'); fl.className='file-list';
+            const a = document.createElement('a');
+            a.href = p.fileUrl;
+            a.target = '_blank';
+            a.className = 'download';
+            a.textContent = '📥 '+(p.fileName || 'Download');
+            a.setAttribute('download', p.fileName || '');
             fl.appendChild(a); el.appendChild(fl);
           }
 
@@ -275,7 +283,7 @@
             ctr.appendChild(del);
           }
 
-          // assignments
+          // assignments (unchanged) - students can upload submissions
           if(p.type==='assignment'){
             const subDiv = document.createElement('div'); subDiv.style.marginTop='10px';
             if(!isTeacher){
@@ -308,9 +316,9 @@
             el.appendChild(subDiv);
           }
 
-          // comments for general posts
+          // comments + replies for general posts
           if(p.type==='general'){
-            const cDiv = document.createElement('div'); 
+            const cDiv = document.createElement('div');
             cDiv.style.marginTop='10px';
             if(currentUser){
               cDiv.innerHTML = `
@@ -332,18 +340,65 @@
                   cText.value='';
                 }catch(err){ alert('Failed: '+err.message) }
               });
+
+              // listen to all comments once and render top-level + replies grouped per post
               const cq = query(collection(db,'comments'), orderBy('created','asc'));
               onSnapshot(cq, snap=>{
-                cList.innerHTML='';
-                snap.forEach(d=>{
-                  const cm = d.data();
-                  if(cm.postId === p.id){
-                    const cmEl = document.createElement('div');
-                    cmEl.className='muted';
-                    cmEl.style.marginBottom='6px';
-                    cmEl.innerHTML = `<strong>${escapeHtml(cm.name||'')}</strong>: ${escapeHtml(cm.text||'')}`;
-                    cList.appendChild(cmEl);
+                // collect comments for this post
+                const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.postId === p.id);
+                cList.innerHTML = '';
+
+                // top-level comments (no replyTo)
+                const top = all.filter(c => !c.replyTo);
+
+                top.forEach(tc => {
+                  const cmEl = document.createElement('div');
+                  cmEl.className='muted';
+                  cmEl.style.marginBottom='6px';
+                  cmEl.innerHTML = `<strong>${escapeHtml(tc.name||'')}</strong>: ${escapeHtml(tc.text||'')}`;
+
+                  // show replies (if any)
+                  const replies = all.filter(r => r.replyTo === tc.id);
+                  if(replies.length){
+                    const rDiv = document.createElement('div');
+                    rDiv.style.marginLeft='18px';
+                    rDiv.style.marginTop='6px';
+                    replies.forEach(r => {
+                      const re = document.createElement('div');
+                      re.className='muted';
+                      re.style.marginBottom='4px';
+                      re.innerHTML = `<strong>${escapeHtml(r.name||'')}</strong>: ${escapeHtml(r.text||'')}`;
+                      rDiv.appendChild(re);
+                    });
+                    cmEl.appendChild(rDiv);
                   }
+
+                  // reply box for this comment
+                  const replyBox = document.createElement('div');
+                  replyBox.className = 'replyBox';
+                  replyBox.innerHTML = `<textarea class="rText" placeholder="Reply..." style="width:100%;padding:6px;border-radius:8px;border:1px solid #e6eef8"></textarea><button class="rBtn small">Reply</button>`;
+                  replyBox.querySelector('.rBtn').addEventListener('click', async ()=>{
+                    const rText = replyBox.querySelector('.rText').value.trim();
+                    if(!rText) return;
+                    try{
+                      await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text: rText, created: serverTimestamp(), replyTo: tc.id });
+                      replyBox.querySelector('.rText').value = '';
+                    }catch(err){ alert('Reply failed: '+err.message) }
+                  });
+
+                  cmEl.appendChild(replyBox);
+                  cList.appendChild(cmEl);
+                });
+
+                // optionally show replies that accidentally have no parent (or parent deleted)
+                const orphanReplies = all.filter(c => c.replyTo && !all.find(a => a.id === c.replyTo));
+                orphanReplies.forEach(or => {
+                  const orEl = document.createElement('div');
+                  orEl.className = 'muted';
+                  orEl.style.marginBottom = '6px';
+                  orEl.style.marginLeft = '12px';
+                  orEl.innerHTML = `<strong>${escapeHtml(or.name||'')}</strong>: ${escapeHtml(or.text||'')}`;
+                  cList.appendChild(orEl);
                 });
               });
             }
