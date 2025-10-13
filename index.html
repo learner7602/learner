@@ -5,65 +5,140 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>EduVlog — Classroom Vlog</title>
   <style>
-    :root{--primary:#2b6cb0;--muted:#667085}
+    :root{--primary:#3b82f6;--muted:#64748b;--bg-light:#f1f5f9; --border-color:#e2e8f0;}
     *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;color:#0f172a;background:#f8fafc}
-    header{background:linear-gradient(90deg,var(--primary),#4c51bf);color:white;padding:18px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;color:#0f172a;background:var(--bg-light)}
+    header{background:linear-gradient(90deg,#1e3a8a,#3730a3);color:white;padding:18px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:4px solid var(--primary);}
     header h1{font-size:20px;margin:0}
-    .wrap{max-width:1100px;margin:18px auto;padding:0 16px}
-    .card{background:white;border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(15,23,42,0.06);margin-bottom:12px}
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:16px}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    
+    /* Store Link Style */
+    .store-link {
+        background: #f97316;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 24px;
+        transition: all 0.2s ease;
+    }
+    .store-link:hover {
+        background: #ea580c;
+        transform: translateY(-2px);
+    }
+
+    /* AUTH UI STYLES */
+    #authArea{
+      max-width:420px;
+      margin: 50px auto;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius:16px;
+      padding: 32px;
+      border: 1px solid #1e293b;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.4), 0 0 150px rgba(59,130,246,0.2);
+    }
+    #authArea .tabs{ display:flex; border-bottom: 1px solid #1e293b; margin-bottom: 24px; }
+    #authArea .tab{ flex:1; text-align: center; padding: 12px 0; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; transition: all 0.3s ease; font-weight: 600; }
+    #authArea .tab.active{ color: white; border-bottom-color: var(--primary); }
+    #authArea label { display:block; margin-bottom: 20px; color: #94a3b8; font-size: 14px; }
+    #authArea input { width: 100%; background: #1e293b; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 8px; margin-top: 8px; font-size: 16px; transition: all 0.3s ease; }
+    #authArea input:focus{ outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
+    #authArea button { width: 100%; background: linear-gradient(90deg, var(--primary), #6366f1); color: white; border: 0; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 700; transition: all 0.3s ease; }
+    #authArea button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99,102,241,0.4); }
+    #authArea .muted{ text-align:center; color: #64748b; }
+
+    /* PROFESSIONAL DASHBOARD UI STYLES */
+    .card{ background:white; border-radius:12px; margin-bottom:16px; border: 1px solid var(--border-color); box-shadow: none; }
+    .card-header{ padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
+    .card-header h3{ margin:0; font-size: 18px; color: #1e293b; }
+    .card-body{ padding: 18px; }
+    #welcomeCard{ background: linear-gradient(90deg, #3730a3, #1e3a8a); color: white; border: none; padding: 24px; }
+    #welcomeCard .muted{ color: #d1d5db; }
+    
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:24px}
     @media(max-width:880px){.grid{grid-template-columns:1fr}}
-    button,input[type=button]{background:var(--primary);color:white;border:0;padding:8px 12px;border-radius:8px;cursor:pointer}
+    
+    button,input[type=button]{background:var(--primary);color:white;border:0;padding:10px 16px;border-radius:8px;cursor:pointer; font-weight: 600; transition: background 0.2s ease;}
+    button:hover{ background: #1d4ed8; }
     button.secondary{background:#e2e8f0;color:#0f172a}
-    input,textarea,select{width:100%;padding:8px;border-radius:8px;border:1px solid #e6eef8;margin-top:6px}
-    .muted{color:var(--muted)}
-    .small{font-size:13px;padding:6px 8px;border-radius:8px}
-    .controls{display:flex;gap:6px;flex-wrap:wrap}
-    .file-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    a.download{display:inline-block;padding:6px 8px;border-radius:6px;border:1px dashed #cbd5e1;font-size:13px;text-decoration:none}
-    .post{border-left:4px solid transparent;padding-left:12px}
-    .notice{border-left-color:#f97316}
-    .assignment{border-left-color:#06b6d4}
-    .quiz{border-left-color:#10b981}
-    .empty{color:var(--muted);text-align:center;padding:28px}
-    .tabs{display:flex;gap:8px;margin-bottom:12px}
-    .tab{padding:8px 12px;border-radius:8px;cursor:pointer}
-    .tab.active{background:#eef2ff}
-    footer{padding:18px;text-align:center;color:var(--muted);font-size:13px}
-    .replyBox{margin-left:14px;margin-top:6px}
+    button.secondary:hover{background:#cbd5e1;}
+    label { display: block; margin-bottom: 12px; font-weight: 500; }
+    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #cbd5e1;margin-top:6px; background:#f8fafc;}
+    input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); border-color: var(--primary);}
+    
+    .small{font-size:13px;padding:6px 10px;border-radius:8px}
+    
+    .post{ padding: 0; }
+    .post-header{ display: flex; align-items: flex-start; gap: 12px; padding: 16px; }
+    .post-icon{ font-size: 24px; line-height: 1; margin-top: 2px; }
+    .post-title-meta{ flex: 1; }
+    .post-title-meta strong{ font-size: 18px; color: #1e293b; }
+    .post-title-meta .muted{ font-size: 13px; }
+    .post-body{ padding: 0 16px 16px; line-height: 1.6; }
+    .post-footer{ padding: 16px; border-top: 1px solid var(--border-color); background: #f8fafc; }
+    
+    .notice{ border-left:4px solid #f97316 }
+    .assignment{ border-left:4px solid #06b6d4 }
+    .quiz{ border-left:4px solid #10b981 }
+    .general{ border-left:4px solid #64748b }
+
+    a.download{display:inline-block;padding:8px 12px;border-radius:6px;border:1px solid #cbd5e1;font-size:13px;text-decoration:none; background: #fff; font-weight: 500; }
+    a.download:hover{ border-color: var(--primary); color: var(--primary); }
+    .file-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    
+    .empty{color:var(--muted);text-align:center;padding:32px}
+
+    /* --- CALCULATOR STYLES START --- */
+    #calculator { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+    #calc-display { background: #0f172a; color: white; font-size: 48px; font-weight: 300; padding: 20px; text-align: right; border-radius: 10px; margin-bottom: 20px; overflow-x: auto; white-space: nowrap; }
+    .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .calc-btn { background: #334155; color: white; border: none; border-radius: 8px; padding: 20px; font-size: 20px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
+    .calc-btn:hover { background: #475569; }
+    .calc-btn:active { transform: scale(0.95); }
+    .calc-btn.operator { background: #3b82f6; color: white; }
+    .calc-btn.operator:hover { background: #2563eb; }
+    .calc-btn.function { background: #64748b; color: white; }
+    .calc-btn.function:hover { background: #475569; }
+    .calc-btn.equals { background: #16a34a; color: white; grid-column: span 2; }
+    .calc-btn.equals:hover { background: #15803d; }
+    /* --- CALCULATOR STYLES END --- */
+
+    footer{padding:24px;text-align:center;color:var(--muted);font-size:13px; margin-top: 32px; }
+    .replyBox{margin-left:14px;margin-top:8px}
   </style>
 </head>
 <body>
   <header>
     <div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700">EV</div>
     <h1>EduVlog — Classroom Vlog</h1>
+    <a href="#" class="store-link">Store</a>
     <div id="userPanel" style="margin-left:auto"></div>
   </header>
 
   <main class="wrap">
-    <div id="authArea" class="card">
+    <div id="authArea">
       <div class="tabs">
         <div id="tabSignIn" class="tab active">Sign In</div>
         <div id="tabRegister" class="tab">Register</div>
       </div>
       <div id="signInForm">
-        <label>Email<input id="siEmail" type="email"/></label>
-        <label>Password<input id="siPassword" type="password"/></label>
+        <label>Email Address<input id="siEmail" type="email" placeholder="you@example.com"/></label>
+        <label>Password<input id="siPassword" type="password" placeholder="••••••••"/></label>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button id="btnSignIn">Sign In</button>
         </div>
-        <div id="siMsg" class="muted" style="margin-top:8px"></div>
+        <div id="siMsg" class="muted" style="margin-top:8px; height: 1em;"></div>
       </div>
-
       <div id="registerForm" style="display:none">
-        <label>Name<input id="rName" /></label>
-        <label>Email<input id="rEmail" type="email"/></label>
-        <label>Password<input id="rPassword" type="password"/></label>
+        <label>Full Name<input id="rName" placeholder="John Doe"/></label>
+        <label>Email Address<input id="rEmail" type="email" placeholder="you@example.com"/></label>
+        <label>Password<input id="rPassword" type="password" placeholder="Minimum 6 characters"/></label>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="btnRegister">Register</button>
+          <button id="btnRegister">Create Account</button>
         </div>
-        <div id="rMsg" class="muted" style="margin-top:8px"></div>
+        <div id="rMsg" class="muted" style="margin-top:8px; height: 1em;"></div>
       </div>
     </div>
 
@@ -75,29 +150,55 @@
       <div class="grid">
         <section>
           <div id="teacherPanel" class="card" style="display:none">
-            <strong>Create Post</strong>
-            <label>Type<select id="postType"><option value="notice">Notice</option><option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="general">General</option></select></label>
-            <label>Title<input id="postTitle" /></label>
-            <label>Content<textarea id="postContent" rows="4"></textarea></label>
-
-            <!-- CHANGED: teacher should paste a drive/link instead of uploading a file -->
-            <label>Attach Document Link<input id="postLink" placeholder="Paste Google Drive link here" /></label>
-
-            <div style="display:flex;gap:8px;margin-top:12px">
-              <button id="btnPublish">Publish</button>
+            <div class="card-header"><h3>Create a New Post</h3></div>
+            <div class="card-body">
+              <label>Type<select id="postType"><option value="notice">Notice</option><option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="general">General</option></select></label>
+              <label>Title<input id="postTitle" /></label>
+              <label>Content<textarea id="postContent" rows="4"></textarea></label>
+              <label>Attach Document Link<input id="postLink" placeholder="Paste Google Drive link here" /></label>
+              <div style="display:flex;gap:8px;margin-top:12px">
+                <button id="btnPublish">Publish</button>
+              </div>
             </div>
           </div>
 
           <div class="card">
-            <strong>Posts</strong>
-            <div id="postsList" style="margin-top:12px"></div>
+            <div class="card-header"><h3>Classroom Feed</h3></div>
+            <div class="card-body">
+              <div id="postsList"></div>
+            </div>
           </div>
         </section>
 
         <aside>
           <div class="card">
-            <strong>Activity</strong>
-            <div id="activityList" style="margin-top:8px"></div>
+            <div class="card-header"><h3>Calculator</h3></div>
+            <div class="card-body">
+                <div id="calculator">
+                    <div id="calc-display">0</div>
+                    <div class="calc-keys">
+                        <button class="calc-btn function" data-key="clear">AC</button>
+                        <button class="calc-btn function" data-key="backspace">DEL</button>
+                        <button class="calc-btn operator" data-key="%">%</button>
+                        <button class="calc-btn operator" data-key="/">÷</button>
+                        <button class="calc-btn" data-key="7">7</button>
+                        <button class="calc-btn" data-key="8">8</button>
+                        <button class="calc-btn" data-key="9">9</button>
+                        <button class="calc-btn operator" data-key="*">×</button>
+                        <button class="calc-btn" data-key="4">4</button>
+                        <button class="calc-btn" data-key="5">5</button>
+                        <button class="calc-btn" data-key="6">6</button>
+                        <button class="calc-btn operator" data-key="-">−</button>
+                        <button class="calc-btn" data-key="1">1</button>
+                        <button class="calc-btn" data-key="2">2</button>
+                        <button class="calc-btn" data-key="3">3</button>
+                        <button class="calc-btn operator" data-key="+">+</button>
+                        <button class="calc-btn" data-key="0">0</button>
+                        <button class="calc-btn" data-key=".">.</button>
+                        <button class="calc-btn equals" data-key="=">=</button>
+                    </div>
+                </div>
+            </div>
           </div>
         </aside>
       </div>
@@ -139,8 +240,7 @@
     const welcomeText = document.getElementById('welcomeText');
     const teacherPanel = document.getElementById('teacherPanel');
     const postsList = document.getElementById('postsList');
-    const activityList = document.getElementById('activityList');
-
+    
     // sign in inputs
     const siEmail = document.getElementById('siEmail');
     const siPassword = document.getElementById('siPassword');
@@ -153,8 +253,6 @@
     const postType = document.getElementById('postType');
     const postTitle = document.getElementById('postTitle');
     const postContent = document.getElementById('postContent');
-
-    // CHANGED: replaced file input reference with link input for teacher posts
     const postLink = document.getElementById('postLink');
 
     const btnSignIn = document.getElementById('btnSignIn');
@@ -208,11 +306,12 @@
         isTeacher = await checkIsTeacher(user.uid);
         authArea.style.display='none';
         appArea.style.display='block';
-        userPanel.innerHTML = `<span style="margin-right:12px">Welcome, <strong>${escapeHtml(currentName)}</strong> (${isTeacher? 'teacher':'student'})</span><button id=btnLogout class="small secondary">Logout</button>`;
+        userPanel.innerHTML = `<span style="margin-right:12px">Welcome, <strong>${escapeHtml(currentName)}</strong></span><button id=btnLogout class="small secondary">Logout</button>`;
         document.getElementById('btnLogout').addEventListener('click', ()=> signOut(auth));
         teacherPanel.style.display = isTeacher? 'block':'none';
-        welcomeText.innerHTML = `<div class="muted">Signed in as</div><div style="font-weight:700">${escapeHtml(currentName)} — ${isTeacher? 'Teacher' : 'Student'}</div>`;
-        loadPosts(); loadActivity();
+        welcomeText.innerHTML = `<div class="muted">Signed in as ${isTeacher? 'Teacher' : 'Student'}</div><div style="font-weight:700; font-size: 24px;">${escapeHtml(currentName)}</div>`;
+        loadPosts();
+        initCalculator(); // Initialize calculator logic
       } else {
         currentName=''; isTeacher=false;
         authArea.style.display='block'; appArea.style.display='none'; userPanel.innerHTML='';
@@ -225,16 +324,21 @@
       if(!isTeacher) return alert('Only teachers can publish');
       const title = postTitle.value.trim();
       const content = postContent.value.trim();
-      const link = postLink.value.trim(); // teacher-provided link
+      const link = postLink.value.trim();
       if(!title){ return alert('Title required') }
       try{
-        // store link (if provided) in the post doc; no storage upload for teacher side
         await addDoc(collection(db,'posts'), { title, content, type: postType.value, link: link || null, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName });
         postTitle.value=''; postContent.value=''; postLink.value='';
       }catch(err){ alert('Failed to publish: '+err.message) }
     });
+    
+    function getPostIcon(type){
+        switch(type){
+            case 'notice': return '📢'; case 'assignment': return '📝'; case 'quiz': return '❓';
+            case 'general': return '💬'; default: return '📄';
+        }
+    }
 
-    // load posts
     function loadPosts(){
       const q = query(collection(db,'posts'), orderBy('created','desc'));
       onSnapshot(q, snap=>{
@@ -242,169 +346,20 @@
         if(snap.empty) { postsList.innerHTML='<div class="empty">No posts yet.</div>'; return }
         snap.forEach(docu=>{
           const p = { id: docu.id, ...docu.data() };
-          const el = document.createElement('div'); el.className='post card '+(p.type||'');
+          const el = document.createElement('div'); el.className='post card '+(p.type||'general');
           const dateStr = p.created && p.created.toDate ? p.created.toDate().toLocaleString() : '';
-          el.innerHTML = `
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <strong>${escapeHtml(p.title||'')}</strong>
-                <div class="muted">${escapeHtml(p.type||'')} • ${escapeHtml(p.authorName||'Unknown')} • ${dateStr}</div>
-              </div>
-              <div class="controls"></div>
-            </div>
-            <div style="margin-top:8px">${nl2br(escapeHtml(p.content||''))}</div>
-          `;
-
-          // show teacher-provided link first (Drive/URL). fallback to fileUrl if present (legacy)
-          if(p.link){
-            const fl = document.createElement('div'); fl.className='file-list';
-            const a = document.createElement('a');
-            a.href = p.link;
-            a.target = '_blank';
-            a.className = 'download';
-            a.textContent = '🔗 Open Document';
-            fl.appendChild(a); el.appendChild(fl);
-          } else if(p.fileUrl){
-            const fl = document.createElement('div'); fl.className='file-list';
-            const a = document.createElement('a');
-            a.href = p.fileUrl;
-            a.target = '_blank';
-            a.className = 'download';
-            a.textContent = '📥 '+(p.fileName || 'Download');
-            a.setAttribute('download', p.fileName || '');
-            fl.appendChild(a); el.appendChild(fl);
-          }
-
-          // controls
+          const icon = getPostIcon(p.type);
+          const typeStr = p.type?.charAt(0).toUpperCase() + p.type?.slice(1) || 'General';
+          el.innerHTML = `<div class="post-header"><div class="post-icon">${icon}</div><div class="post-title-meta"><strong>${escapeHtml(p.title||'')}</strong><div class="muted">${escapeHtml(typeStr)} • by ${escapeHtml(p.authorName||'Unknown')} • ${dateStr}</div></div><div class="controls" style="margin-left:auto;"></div></div><div class="post-body">${nl2br(escapeHtml(p.content||''))}</div>`;
+          const postBody = el.querySelector('.post-body');
+          if(p.link){ const fl = document.createElement('div'); fl.className='file-list'; const a = document.createElement('a'); a.href = p.link; a.target = '_blank'; a.className = 'download'; a.textContent = '🔗 Open Document'; fl.appendChild(a); postBody.appendChild(fl); } 
+          else if(p.fileUrl){ const fl = document.createElement('div'); fl.className='file-list'; const a = document.createElement('a'); a.href = p.fileUrl; a.target = '_blank'; a.className = 'download'; a.textContent = '📥 '+(p.fileName || 'Download'); a.setAttribute('download', p.fileName || ''); fl.appendChild(a); postBody.appendChild(fl); }
           const ctr = el.querySelector('.controls');
-          if(isTeacher){
-            const del = document.createElement('button'); del.className='small secondary'; del.textContent='Delete';
-            del.onclick = ()=> deletePost(p.id, p.filePath);
-            ctr.appendChild(del);
-          }
-
-          // assignments (unchanged) - students can upload submissions
-          if(p.type==='assignment'){
-            const subDiv = document.createElement('div'); subDiv.style.marginTop='10px';
-            if(!isTeacher){
-              subDiv.innerHTML = `<input type="file" class="subFile" /><textarea class="subText" placeholder="Add notes (optional)" style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #e6eef8"></textarea><div style="margin-top:6px"><button class="submitBtn">Submit Assignment</button></div>`;
-              const submitBtn = subDiv.querySelector('.submitBtn');
-              submitBtn.addEventListener('click', async ()=>{
-                const fileInput = subDiv.querySelector('.subFile');
-                const text = subDiv.querySelector('.subText').value;
-                try{
-                  let fileInfo = null;
-                  if(fileInput.files && fileInput.files[0]){
-                    const f = fileInput.files[0];
-                    const path = `submissions/${p.id}/${currentUser.uid}_${Date.now()}_${sanitizeFilename(f.name)}`;
-                    const sRef = storageRef(storage, path);
-                    await uploadBytes(sRef, f);
-                    const url = await getDownloadURL(sRef);
-                    fileInfo = { fileName: f.name, filePath: path, fileUrl: url };
-                  }
-                  await addDoc(collection(db,'submissions'), { postId: p.id, postTitle: p.title, uid: currentUser.uid, name: currentName, text, created: serverTimestamp(), ...fileInfo });
-                  alert('Submitted ✅');
-                  fileInput.value=''; subDiv.querySelector('.subText').value='';
-                }catch(err){ alert('Submit failed: '+err.message) }
-              });
-            } else {
-              const view = document.createElement('div');
-              view.innerHTML = `<button class="small">View submissions</button>`;
-              view.querySelector('button').addEventListener('click', ()=> showSubmissionsForPost(p.id));
-              subDiv.appendChild(view);
-            }
-            el.appendChild(subDiv);
-          }
-
-          // comments + replies for general posts
-          if(p.type==='general'){
-            const cDiv = document.createElement('div');
-            cDiv.style.marginTop='10px';
-            if(currentUser){
-              cDiv.innerHTML = `
-                <textarea class="cText" placeholder="Write a comment..." 
-                  style="width:100%;margin-top:6px;padding:8px;border-radius:8px;border:1px solid #e6eef8"></textarea>
-                <div style="margin-top:6px">
-                  <button class="cBtn">Post Comment</button>
-                </div>
-                <div class="cList" style="margin-top:10px"></div>
-              `;
-              const cBtn = cDiv.querySelector('.cBtn');
-              const cText = cDiv.querySelector('.cText');
-              const cList = cDiv.querySelector('.cList');
-              cBtn.addEventListener('click', async ()=>{
-                const text = cText.value.trim();
-                if(!text) return;
-                try{
-                  await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text, created: serverTimestamp() });
-                  cText.value='';
-                }catch(err){ alert('Failed: '+err.message) }
-              });
-
-              // listen to all comments once and render top-level + replies grouped per post
-              const cq = query(collection(db,'comments'), orderBy('created','asc'));
-              onSnapshot(cq, snap=>{
-                // collect comments for this post
-                const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.postId === p.id);
-                cList.innerHTML = '';
-
-                // top-level comments (no replyTo)
-                const top = all.filter(c => !c.replyTo);
-
-                top.forEach(tc => {
-                  const cmEl = document.createElement('div');
-                  cmEl.className='muted';
-                  cmEl.style.marginBottom='6px';
-                  cmEl.innerHTML = `<strong>${escapeHtml(tc.name||'')}</strong>: ${escapeHtml(tc.text||'')}`;
-
-                  // show replies (if any)
-                  const replies = all.filter(r => r.replyTo === tc.id);
-                  if(replies.length){
-                    const rDiv = document.createElement('div');
-                    rDiv.style.marginLeft='18px';
-                    rDiv.style.marginTop='6px';
-                    replies.forEach(r => {
-                      const re = document.createElement('div');
-                      re.className='muted';
-                      re.style.marginBottom='4px';
-                      re.innerHTML = `<strong>${escapeHtml(r.name||'')}</strong>: ${escapeHtml(r.text||'')}`;
-                      rDiv.appendChild(re);
-                    });
-                    cmEl.appendChild(rDiv);
-                  }
-
-                  // reply box for this comment
-                  const replyBox = document.createElement('div');
-                  replyBox.className = 'replyBox';
-                  replyBox.innerHTML = `<textarea class="rText" placeholder="Reply..." style="width:100%;padding:6px;border-radius:8px;border:1px solid #e6eef8"></textarea><button class="rBtn small">Reply</button>`;
-                  replyBox.querySelector('.rBtn').addEventListener('click', async ()=>{
-                    const rText = replyBox.querySelector('.rText').value.trim();
-                    if(!rText) return;
-                    try{
-                      await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text: rText, created: serverTimestamp(), replyTo: tc.id });
-                      replyBox.querySelector('.rText').value = '';
-                    }catch(err){ alert('Reply failed: '+err.message) }
-                  });
-
-                  cmEl.appendChild(replyBox);
-                  cList.appendChild(cmEl);
-                });
-
-                // optionally show replies that accidentally have no parent (or parent deleted)
-                const orphanReplies = all.filter(c => c.replyTo && !all.find(a => a.id === c.replyTo));
-                orphanReplies.forEach(or => {
-                  const orEl = document.createElement('div');
-                  orEl.className = 'muted';
-                  orEl.style.marginBottom = '6px';
-                  orEl.style.marginLeft = '12px';
-                  orEl.innerHTML = `<strong>${escapeHtml(or.name||'')}</strong>: ${escapeHtml(or.text||'')}`;
-                  cList.appendChild(orEl);
-                });
-              });
-            }
-            el.appendChild(cDiv);
-          }
-
+          if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.textContent='Delete'; del.onclick = ()=> deletePost(p.id, p.filePath); ctr.appendChild(del); }
+          const postFooter = document.createElement('div'); postFooter.className = 'post-footer'; let footerNeeded = false;
+          if(p.type==='assignment'){ footerNeeded = true; const subDiv = document.createElement('div'); if(!isTeacher){ subDiv.innerHTML = `<label>Submit Your Work</label><input type="file" class="subFile" /><textarea class="subText" placeholder="Add notes (optional)"></textarea><div style="margin-top:8px"><button class="submitBtn small">Submit Assignment</button></div>`; const submitBtn = subDiv.querySelector('.submitBtn'); submitBtn.addEventListener('click', async ()=>{ const fileInput = subDiv.querySelector('.subFile'); const text = subDiv.querySelector('.subText').value; try{ let fileInfo = null; if(fileInput.files && fileInput.files[0]){ const f = fileInput.files[0]; const path = `submissions/${p.id}/${currentUser.uid}_${Date.now()}_${sanitizeFilename(f.name)}`; const sRef = storageRef(storage, path); await uploadBytes(sRef, f); const url = await getDownloadURL(sRef); fileInfo = { fileName: f.name, filePath: path, fileUrl: url }; } await addDoc(collection(db,'submissions'), { postId: p.id, postTitle: p.title, uid: currentUser.uid, name: currentName, text, created: serverTimestamp(), ...fileInfo }); alert('Submitted ✅'); fileInput.value=''; subDiv.querySelector('.subText').value=''; }catch(err){ alert('Submit failed: '+err.message) } }); } else { const view = document.createElement('div'); view.innerHTML = `<button class="small">View submissions</button>`; view.querySelector('button').addEventListener('click', ()=> showSubmissionsForPost(p.id)); subDiv.appendChild(view); } postFooter.appendChild(subDiv); }
+          if(p.type==='general'){ footerNeeded = true; const cDiv = document.createElement('div'); if(currentUser){ cDiv.innerHTML = `<label>Leave a comment</label><textarea class="cText" placeholder="Write a comment..."></textarea><div style="margin-top:8px"><button class="cBtn small">Post Comment</button></div><div class="cList" style="margin-top:16px"></div>`; const cBtn = cDiv.querySelector('.cBtn'); const cText = cDiv.querySelector('.cText'); const cList = cDiv.querySelector('.cList'); cBtn.addEventListener('click', async ()=>{ const text = cText.value.trim(); if(!text) return; try{ await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text, created: serverTimestamp() }); cText.value=''; }catch(err){ alert('Failed: '+err.message) } }); const cq = query(collection(db,'comments'), orderBy('created','asc')); onSnapshot(cq, snap=>{ const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.postId === p.id); cList.innerHTML = all.length > 0 ? '<h6>Comments</h6>' : ''; const top = all.filter(c => !c.replyTo); top.forEach(tc => { const cmEl = document.createElement('div'); cmEl.className='muted'; cmEl.style.marginBottom='6px'; cmEl.innerHTML = `<strong>${escapeHtml(tc.name||'')}</strong>: ${escapeHtml(tc.text||'')}`; const replies = all.filter(r => r.replyTo === tc.id); if(replies.length){ const rDiv = document.createElement('div'); rDiv.style.marginLeft='18px'; rDiv.style.marginTop='6px'; replies.forEach(r => { const re = document.createElement('div'); re.className='muted'; re.style.marginBottom='4px'; re.innerHTML = `<strong>${escapeHtml(r.name||'')}</strong>: ${escapeHtml(r.text||'')}`; rDiv.appendChild(re); }); cmEl.appendChild(rDiv); } const replyBox = document.createElement('div'); replyBox.className = 'replyBox'; replyBox.innerHTML = `<textarea class="rText" placeholder="Reply..."></textarea><button class="rBtn small">Reply</button>`; replyBox.querySelector('.rBtn').addEventListener('click', async ()=>{ const rText = replyBox.querySelector('.rText').value.trim(); if(!rText) return; try{ await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text: rText, created: serverTimestamp(), replyTo: tc.id }); replyBox.querySelector('.rText').value = ''; }catch(err){ alert('Reply failed: '+err.message) } }); cmEl.appendChild(replyBox); cList.appendChild(cmEl); }); }); } postFooter.appendChild(cDiv); }
+          if(footerNeeded) el.appendChild(postFooter);
           postsList.appendChild(el);
         });
       });
@@ -414,35 +369,102 @@
       const q = query(collection(db,'submissions'), orderBy('created','desc'));
       onSnapshot(q, snap=>{
         const subs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(s=>s.postId===postId);
-        const overlay = document.createElement('div'); overlay.style.position='fixed'; overlay.style.left=0; overlay.style.top=0; overlay.style.width='100%'; overlay.style.height='100%'; overlay.style.background='rgba(0,0,0,0.5)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center';
+        const overlay = document.createElement('div'); overlay.style.position='fixed'; overlay.style.left=0; overlay.style.top=0; overlay.style.width='100%'; overlay.style.height='100%'; overlay.style.background='rgba(0,0,0,0.5)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center'; overlay.style.zIndex='100';
         const box = document.createElement('div'); box.style.background='#fff'; box.style.padding='18px'; box.style.borderRadius='12px'; box.style.maxWidth='800px'; box.style.width='90%'; box.style.maxHeight='80%'; box.style.overflow='auto';
         box.innerHTML = `<h3>Submissions for post</h3>`;
-        subs.forEach(s=>{
-          const d = document.createElement('div'); d.className='card'; d.style.marginBottom='8px';
-          d.innerHTML = `<div><strong>${escapeHtml(s.name||s.uid)}</strong> • <span class="muted">${s.created && s.created.toDate? s.created.toDate().toLocaleString() : ''}</span></div><div style="margin-top:6px">${escapeHtml(s.text||'')}</div>`;
-          if(s.fileUrl){ const a = document.createElement('a'); a.href=s.fileUrl; a.target='_blank'; a.className='download'; a.textContent='📥 '+s.fileName; a.setAttribute('download', s.fileName); d.appendChild(a); }
-          if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.style.marginLeft='8px'; del.textContent='Delete Submission'; del.onclick = ()=> deleteSubmission(s.id, s.filePath); d.appendChild(del); }
-          box.appendChild(d);
-        });
-        const close = document.createElement('button'); close.textContent='Close'; close.className='small'; close.onclick = ()=> document.body.removeChild(overlay);
-        box.appendChild(close);
+        if (subs.length === 0) { box.innerHTML += `<p class="muted">No submissions yet.</p>`; }
+        subs.forEach(s=>{ const d = document.createElement('div'); d.className='card'; d.style.marginBottom='8px'; d.innerHTML = `<div class="card-body"><div><strong>${escapeHtml(s.name||s.uid)}</strong> • <span class="muted">${s.created && s.created.toDate? s.created.toDate().toLocaleString() : ''}</span></div><div style="margin-top:6px">${escapeHtml(s.text||'')}</div></div>`; if(s.fileUrl){ const a = document.createElement('a'); a.href=s.fileUrl; a.target='_blank'; a.className='download'; a.textContent='📥 '+s.fileName; a.setAttribute('download', s.fileName); d.querySelector('.card-body').appendChild(a); } if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.style.marginLeft='8px'; del.textContent='Delete Submission'; del.onclick = ()=> deleteSubmission(s.id, s.filePath); d.querySelector('.card-body').appendChild(del); } box.appendChild(d); });
+        const close = document.createElement('button'); close.textContent='Close'; close.className='small'; close.style.marginTop='12px'; close.onclick = ()=> document.body.removeChild(overlay); box.appendChild(close);
         overlay.appendChild(box); document.body.appendChild(overlay);
       });
     }
 
-    function loadActivity(){
-      onSnapshot(collection(db,'activity'), snap=>{
-        activityList.innerHTML='';
-        snap.forEach(d=>{ const a=d.data(); const el=document.createElement('div'); el.className='muted'; el.style.marginBottom='6px'; el.textContent = `${a.msg || ''} ${a.by? '• '+a.by : ''}`; activityList.appendChild(el); });
-      });
+    // --- CALCULATOR SCRIPT START ---
+    function initCalculator() {
+        const display = document.getElementById('calc-display');
+        const keys = document.querySelector('.calc-keys');
+        let displayValue = '0';
+        let firstValue = null;
+        let operator = null;
+        let waitingForSecondValue = false;
+
+        function updateDisplay() {
+            display.textContent = displayValue;
+        }
+        updateDisplay();
+
+        function calculate(first, op, second) {
+            if (op === '+') return first + second;
+            if (op === '-') return first - second;
+            if (op === '*') return first * second;
+            if (op === '/') return second === 0 ? 'Error' : first / second;
+            if (op === '%') return first % second;
+            return second;
+        }
+
+        keys.addEventListener('click', (e) => {
+            const key = e.target;
+            const action = key.dataset.key;
+
+            if (!key.matches('button')) return;
+
+            if (!isNaN(action) || action === '.') { // Number or decimal pressed
+                if (waitingForSecondValue) {
+                    displayValue = action;
+                    waitingForSecondValue = false;
+                } else {
+                    if (displayValue === '0' && action !== '.') {
+                        displayValue = action;
+                    } else if (action === '.' && displayValue.includes('.')) {
+                        return; // Prevent multiple decimals
+                    } else {
+                        displayValue += action;
+                    }
+                }
+                updateDisplay();
+            } else if (['+', '-', '*', '/', '%'].includes(action)) { // Operator pressed
+                if (operator && !waitingForSecondValue) {
+                    const result = calculate(firstValue, operator, parseFloat(displayValue));
+                    displayValue = `${parseFloat(result.toPrecision(12))}`;
+                    firstValue = result;
+                } else {
+                    firstValue = parseFloat(displayValue);
+                }
+                operator = action;
+                waitingForSecondValue = true;
+                display.textContent = key.textContent; // VISUAL FIX: Show operator on screen
+            } else if (action === '=') { // Equals pressed
+                if (firstValue == null || operator == null || waitingForSecondValue) return;
+                const result = calculate(firstValue, operator, parseFloat(displayValue));
+                if (result === 'Error') {
+                    displayValue = 'Error';
+                } else {
+                    displayValue = `${parseFloat(result.toPrecision(12))}`;
+                }
+                firstValue = null;
+                operator = null;
+                waitingForSecondValue = false;
+                updateDisplay();
+            } else if (action === 'clear') { // AC pressed
+                displayValue = '0';
+                firstValue = null;
+                operator = null;
+                waitingForSecondValue = false;
+                updateDisplay();
+            } else if (action === 'backspace') { // DEL pressed
+                displayValue = displayValue.slice(0, -1) || '0';
+                updateDisplay();
+            }
+        });
     }
+    // --- CALCULATOR SCRIPT END ---
+
 
     async function deletePost(postId, filePath){
       if(!confirm('Delete this post?')) return;
       try{
         if(filePath){ const fRef = storageRef(storage, filePath); await deleteObject(fRef).catch(()=>{}); }
         await deleteDoc(doc(db,'posts',postId));
-        alert('Post deleted');
       }catch(err){ alert('Delete failed: '+err.message) }
     }
 
@@ -451,7 +473,6 @@
       try{
         if(filePath){ const fRef = storageRef(storage, filePath); await deleteObject(fRef).catch(()=>{}); }
         await deleteDoc(doc(db,'submissions', subId));
-        alert('Submission deleted');
       }catch(err){ alert('Delete failed: '+err.message) }
     }
 
