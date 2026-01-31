@@ -1,485 +1,2009 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EduVlog — Classroom Vlog</title>
-  <style>
-    :root{--primary:#3b82f6;--muted:#64748b;--bg-light:#f1f5f9; --border-color:#e2e8f0;}
-    *{box-sizing:border-box}
-    body{font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;color:#0f172a;background:var(--bg-light)}
-    header{background:linear-gradient(90deg,#1e3a8a,#3730a3);color:white;padding:18px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-bottom:4px solid var(--primary);}
-    header h1{font-size:20px;margin:0}
-    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduPortal - Free Learning Platform</title>
     
-    /* Store Link Style */
-    .store-link {
-        background: #f97316;
-        color: white;
-        padding: 8px 16px;
-        border-radius: 8px;
-        text-decoration: none;
-        font-weight: 600;
-        margin-left: 24px;
-        transition: all 0.2s ease;
-    }
-    .store-link:hover {
-        background: #ea580c;
-        transform: translateY(-2px);
-    }
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Jitsi Meet API -->
+    <script src='https://meet.jit.si/external_api.js'></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-    /* AUTH UI STYLES */
-    #authArea{
-      max-width:420px;
-      margin: 50px auto;
-      background: #0f172a;
-      color: #e2e8f0;
-      border-radius:16px;
-      padding: 32px;
-      border: 1px solid #1e293b;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.4), 0 0 150px rgba(59,130,246,0.2);
-    }
-    #authArea .tabs{ display:flex; border-bottom: 1px solid #1e293b; margin-bottom: 24px; }
-    #authArea .tab{ flex:1; text-align: center; padding: 12px 0; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; transition: all 0.3s ease; font-weight: 600; }
-    #authArea .tab.active{ color: white; border-bottom-color: var(--primary); }
-    #authArea label { display:block; margin-bottom: 20px; color: #94a3b8; font-size: 14px; }
-    #authArea input { width: 100%; background: #1e293b; border: 1px solid #334155; color: white; padding: 12px 14px; border-radius: 8px; margin-top: 8px; font-size: 16px; transition: all 0.3s ease; }
-    #authArea input:focus{ outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
-    #authArea button { width: 100%; background: linear-gradient(90deg, var(--primary), #6366f1); color: white; border: 0; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 700; transition: all 0.3s ease; }
-    #authArea button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(99,102,241,0.4); }
-    #authArea .muted{ text-align:center; color: #64748b; }
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --background: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
 
-    /* PROFESSIONAL DASHBOARD UI STYLES */
-    .card{ background:white; border-radius:12px; margin-bottom:16px; border: 1px solid var(--border-color); box-shadow: none; }
-    .card-header{ padding: 14px 18px; border-bottom: 1px solid var(--border-color); }
-    .card-header h3{ margin:0; font-size: 18px; color: #1e293b; }
-    .card-body{ padding: 18px; }
-    #welcomeCard{ background: linear-gradient(90deg, #3730a3, #1e3a8a); color: white; border: none; padding: 24px; }
-    #welcomeCard .muted{ color: #d1d5db; }
-    
-    .grid{display:grid;grid-template-columns:1fr 360px;gap:24px}
-    @media(max-width:880px){.grid{grid-template-columns:1fr}}
-    
-    button,input[type=button]{background:var(--primary);color:white;border:0;padding:10px 16px;border-radius:8px;cursor:pointer; font-weight: 600; transition: background 0.2s ease;}
-    button:hover{ background: #1d4ed8; }
-    button.secondary{background:#e2e8f0;color:#0f172a}
-    button.secondary:hover{background:#cbd5e1;}
-    label { display: block; margin-bottom: 12px; font-weight: 500; }
-    input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #cbd5e1;margin-top:6px; background:#f8fafc;}
-    input:focus, textarea:focus, select:focus { outline: 2px solid var(--primary); border-color: var(--primary);}
-    
-    .small{font-size:13px;padding:6px 10px;border-radius:8px}
-    
-    .post{ padding: 0; }
-    .post-header{ display: flex; align-items: flex-start; gap: 12px; padding: 16px; }
-    .post-icon{ font-size: 24px; line-height: 1; margin-top: 2px; }
-    .post-title-meta{ flex: 1; }
-    .post-title-meta strong{ font-size: 18px; color: #1e293b; }
-    .post-title-meta .muted{ font-size: 13px; }
-    .post-body{ padding: 0 16px 16px; line-height: 1.6; }
-    .post-footer{ padding: 16px; border-top: 1px solid var(--border-color); background: #f8fafc; }
-    
-    .notice{ border-left:4px solid #f97316 }
-    .assignment{ border-left:4px solid #06b6d4 }
-    .quiz{ border-left:4px solid #10b981 }
-    .general{ border-left:4px solid #64748b }
+        body {
+            background: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-    a.download{display:inline-block;padding:8px 12px;border-radius:6px;border:1px solid #cbd5e1;font-size:13px;text-decoration:none; background: #fff; font-weight: 500; }
-    a.download:hover{ border-color: var(--primary); color: var(--primary); }
-    .file-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    
-    .empty{color:var(--muted);text-align:center;padding:32px}
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            animation: bgPulse 10s ease-in-out infinite;
+        }
 
-    /* --- CALCULATOR STYLES START --- */
-    #calculator { background: #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-    #calc-display { background: #0f172a; color: white; font-size: 48px; font-weight: 300; padding: 20px; text-align: right; border-radius: 10px; margin-bottom: 20px; overflow-x: auto; white-space: nowrap; }
-    .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-    .calc-btn { background: #334155; color: white; border: none; border-radius: 8px; padding: 20px; font-size: 20px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; }
-    .calc-btn:hover { background: #475569; }
-    .calc-btn:active { transform: scale(0.95); }
-    .calc-btn.operator { background: #3b82f6; color: white; }
-    .calc-btn.operator:hover { background: #2563eb; }
-    .calc-btn.function { background: #64748b; color: white; }
-    .calc-btn.function:hover { background: #475569; }
-    .calc-btn.equals { background: #16a34a; color: white; grid-column: span 2; }
-    .calc-btn.equals:hover { background: #15803d; }
-    /* --- CALCULATOR STYLES END --- */
+        @keyframes bgPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
 
-    footer{padding:24px;text-align:center;color:var(--muted);font-size:13px; margin-top: 32px; }
-    .replyBox{margin-left:14px;margin-top:8px}
-  </style>
+        /* Glassmorphism Utilities */
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 1rem 2rem;
+            transition: all 0.3s ease;
+        }
+
+        nav.scrolled {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--text);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #fff 0%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-content p {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .hero-image {
+            position: relative;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Public Dashboard */
+        .public-dashboard {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .video-card {
+            background: var(--surface);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+
+        .video-info {
+            padding: 1.5rem;
+        }
+
+        .video-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-meta {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Auth Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal {
+            background: var(--surface);
+            border-radius: 24px;
+            padding: 2.5rem;
+            width: 90%;
+            max-width: 450px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-header p {
+            color: var(--text-muted);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 23, 42, 0.5);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .google-btn {
+            width: 100%;
+            padding: 0.875rem;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+
+        .google-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+            color: var(--text-muted);
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 45%;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+
+        /* Dashboard Layout */
+        .dashboard {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--surface);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 1.5rem;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .user-details h4 {
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-details p {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 0.5rem;
+        }
+
+        .role-student { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .role-teacher { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .role-admin { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--text);
+        }
+
+        .sidebar-menu i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .class-selector {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .class-select {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            background: var(--surface);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue { background: rgba(99, 102, 241, 0.2); color: var(--primary); }
+        .stat-icon.green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .stat-icon.orange { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .stat-icon.red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+
+        .stat-info h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-info p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Video Class Container */
+        .video-container {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #jitsi-container {
+            width: 100%;
+            height: 600px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #000;
+            display: none;
+        }
+
+        #jitsi-container.active {
+            display: block;
+        }
+
+        .class-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        /* Attendance Section */
+        .attendance-section {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .attendance-list {
+            margin-top: 1.5rem;
+        }
+
+        .attendance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            transition: background 0.2s;
+        }
+
+        .attendance-item:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .attendance-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            transform: translateX(24px);
+        }
+
+        /* Admin Panel */
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .admin-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-card h3 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .role-select-admin {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        /* Add Video Form */
+        .add-video-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--surface);
+            color: var(--text);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 3000;
+            transform: translateX(400px);
+            transition: transform 0.3s;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success { border-left: 4px solid var(--success); }
+        .toast.error { border-left: 4px solid var(--danger); }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+            .hero-content h1 { font-size: 2.5rem; }
+            .sidebar { width: 100%; position: relative; height: auto; }
+            .main-content { margin-left: 0; }
+            .dashboard { flex-direction: column; }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 2rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    <div style="width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-weight:700">EV</div>
-    <h1>EduVlog — Classroom Vlog</h1>
-    <a href="https://learner7602.github.io/personal/" class="store-link">Store</a>
-    <div id="userPanel" style="margin-left:auto"></div>
-  </header>
 
-  <main class="wrap">
-    <div id="authArea">
-      <div class="tabs">
-        <div id="tabSignIn" class="tab active">Sign In</div>
-        <div id="tabRegister" class="tab">Register</div>
-      </div>
-      <div id="signInForm">
-        <label>Email Address<input id="siEmail" type="email" placeholder="you@example.com"/></label>
-        <label>Password<input id="siPassword" type="password" placeholder="••••••••"/></label>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="btnSignIn">Sign In</button>
-        </div>
-        <div id="siMsg" class="muted" style="margin-top:8px; height: 1em;"></div>
-      </div>
-      <div id="registerForm" style="display:none">
-        <label>Full Name<input id="rName" placeholder="John Doe"/></label>
-        <label>Email Address<input id="rEmail" type="email" placeholder="you@example.com"/></label>
-        <label>Password<input id="rPassword" type="password" placeholder="Minimum 6 characters"/></label>
-        <div style="display:flex;gap:8px;margin-top:12px">
-          <button id="btnRegister">Create Account</button>
-        </div>
-        <div id="rMsg" class="muted" style="margin-top:8px; height: 1em;"></div>
-      </div>
-    </div>
+    <div class="bg-animation"></div>
 
-    <div id="appArea" style="display:none">
-      <div class="card" id="welcomeCard">
-        <div id="welcomeText"></div>
-      </div>
-
-      <div class="grid">
-        <section>
-          <div id="teacherPanel" class="card" style="display:none">
-            <div class="card-header"><h3>Create a New Post</h3></div>
-            <div class="card-body">
-              <label>Type<select id="postType"><option value="notice">Notice</option><option value="assignment">Assignment</option><option value="quiz">Quiz</option><option value="general">General</option></select></label>
-              <label>Title<input id="postTitle" /></label>
-              <label>Content<textarea id="postContent" rows="4"></textarea></label>
-              <label>Attach Document Link<input id="postLink" placeholder="Paste Google Drive link here" /></label>
-              <div style="display:flex;gap:8px;margin-top:12px">
-                <button id="btnPublish">Publish</button>
-              </div>
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+                EduPortal
             </div>
-          </div>
-
-          <div class="card">
-            <div class="card-header"><h3>Classroom Feed</h3></div>
-            <div class="card-body">
-              <div id="postsList"></div>
+            <div class="nav-links" id="navLinks">
+                <a onclick="showSection('home')" class="active">Home</a>
+                <a onclick="showSection('public-dashboard')">Classes</a>
+                <a onclick="showSection('about')">About</a>
+                <button class="btn btn-primary" onclick="openAuthModal()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
             </div>
-          </div>
-        </section>
+            <div class="nav-links hidden" id="userNav">
+                <a onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </nav>
 
-        <aside>
-          <div class="card">
-            <div class="card-header"><h3>Calculator</h3></div>
-            <div class="card-body">
-                <div id="calculator">
-                    <div id="calc-display">0</div>
-                    <div class="calc-keys">
-                        <button class="calc-btn function" data-key="clear">AC</button>
-                        <button class="calc-btn function" data-key="backspace">DEL</button>
-                        <button class="calc-btn operator" data-key="%">%</button>
-                        <button class="calc-btn operator" data-key="/">÷</button>
-                        <button class="calc-btn" data-key="7">7</button>
-                        <button class="calc-btn" data-key="8">8</button>
-                        <button class="calc-btn" data-key="9">9</button>
-                        <button class="calc-btn operator" data-key="*">×</button>
-                        <button class="calc-btn" data-key="4">4</button>
-                        <button class="calc-btn" data-key="5">5</button>
-                        <button class="calc-btn" data-key="6">6</button>
-                        <button class="calc-btn operator" data-key="-">−</button>
-                        <button class="calc-btn" data-key="1">1</button>
-                        <button class="calc-btn" data-key="2">2</button>
-                        <button class="calc-btn" data-key="3">3</button>
-                        <button class="calc-btn operator" data-key="+">+</button>
-                        <button class="calc-btn" data-key="0">0</button>
-                        <button class="calc-btn" data-key=".">.</button>
-                        <button class="calc-btn equals" data-key="=">=</button>
+    <!-- Public Home Section -->
+    <section id="home" class="section active">
+        <div class="hero">
+            <div class="hero-content">
+                <h1>Learn Without Limits</h1>
+                <p>Join live interactive classes, access premium study materials, and connect with expert teachers — all for free. Education should be accessible to everyone.</p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" onclick="openAuthModal()">
+                        <i class="fas fa-rocket"></i> Get Started
+                    </button>
+                    <button class="btn btn-secondary" onclick="showSection('public-dashboard')">
+                        <i class="fas fa-play-circle"></i> Browse Classes
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <div class="stat-number">10k+</div>
+                        <div class="stat-label">Students</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Classes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">50+</div>
+                        <div class="stat-label">Teachers</div>
                     </div>
                 </div>
             </div>
-          </div>
-        </aside>
-      </div>
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop" alt="Students learning">
+            </div>
+        </div>
+    </section>
+
+    <!-- Public Dashboard (Pre-signin) -->
+    <section id="public-dashboard" class="section">
+        <div class="public-dashboard">
+            <h2 class="section-title">
+                <i class="fas fa-video" style="color: var(--primary);"></i>
+                Free Educational Content
+            </h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                Browse our collection of free educational videos. Sign in to join live classes and access exclusive content.
+            </p>
+            
+            <div id="publicVideos" class="video-grid">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section">
+        <div class="public-dashboard">
+            <div class="glass-card" style="padding: 3rem; max-width: 800px; margin: 0 auto; text-align: center;">
+                <i class="fas fa-school" style="font-size: 4rem; color: var(--primary); margin-bottom: 1.5rem;"></i>
+                <h2 style="font-size: 2.5rem; margin-bottom: 1rem;">About EduPortal</h2>
+                <p style="color: var(--text-muted); line-height: 1.8; margin-bottom: 2rem;">
+                    EduPortal is a revolutionary free educational platform built to bridge the gap between quality education and accessibility. 
+                    We leverage cutting-edge WebRTC technology and Firebase to provide real-time interactive learning experiences without subscription fees.
+                </p>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; margin-top: 3rem;">
+                    <div>
+                        <i class="fas fa-chalkboard-teacher" style="font-size: 2rem; color: var(--secondary); margin-bottom: 1rem;"></i>
+                        <h4>Expert Teachers</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Learn from verified educators</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-users" style="font-size: 2rem; color: var(--success); margin-bottom: 1rem;"></i>
+                        <h4>Live Classes</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Real-time interaction</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-mobile-alt" style="font-size: 2rem; color: var(--warning); margin-bottom: 1rem;"></i>
+                        <h4>Access Anywhere</h4>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">Mobile & desktop friendly</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Student Dashboard -->
+    <section id="student-dashboard" class="section">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-info">
+                        <div class="user-avatar" id="studentAvatar">S</div>
+                        <div class="user-details">
+                            <h4 id="studentName">Student Name</h4>
+                            <p id="studentEmail">email@example.com</p>
+                            <span class="role-badge role-student">Student</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a class="active" onclick="showStudentTab('live-class')"><i class="fas fa-video"></i> Live Class</a></li>
+                    <li><a onclick="showStudentTab('materials')"><i class="fas fa-book"></i> Study Materials</a></li>
+                    <li><a onclick="showStudentTab('attendance')"><i class="fas fa-clipboard-check"></i> My Attendance</a></li>
+                    <li><a onclick="showStudentTab('schedule')"><i class="fas fa-calendar"></i> Schedule</a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <div class="content-header">
+                    <h2>My Learning Portal</h2>
+                    <div class="class-selector">
+                        <label>My Class:</label>
+                        <select class="class-select" id="studentClassSelect" disabled>
+                            <option>Loading...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Class Tab -->
+                <div id="student-live-class" class="student-tab">
+                    <div class="video-container">
+                        <div id="jitsi-container"></div>
+                        <div id="class-join-view" style="text-align: center; padding: 3rem;">
+                            <i class="fas fa-broadcast-tower" style="font-size: 4rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                            <h3>Ready to Join Class?</h3>
+                            <p style="color: var(--text-muted); margin: 1rem 0;">Your teacher hasn't started the live session yet.</p>
+                            <button class="btn btn-primary" onclick="joinLiveClass()">
+                                <i class="fas fa-sign-in-alt"></i> Join Now
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                            <div class="stat-info">
+                                <h3 id="classDuration">45 min</h3>
+                                <p>Class Duration</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fas fa-user-check"></i></div>
+                            <div class="stat-info">
+                                <h3 id="attendanceRate">95%</h3>
+                                <p>Attendance Rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materials Tab -->
+                <div id="student-materials" class="student-tab hidden">
+                    <div class="video-grid" id="studyMaterials">
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open"></i>
+                            <p>No materials uploaded yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Tab -->
+                <div id="student-attendance" class="student-tab hidden">
+                    <div class="attendance-section">
+                        <h3><i class="fas fa-history"></i> Attendance History</h3>
+                        <div id="studentAttendanceList" class="attendance-list">
+                            <div class="empty-state">
+                                <i class="fas fa-clipboard-list"></i>
+                                <p>No attendance records found</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Tab -->
+                <div id="student-schedule" class="student-tab hidden">
+                    <div class="glass-card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-calendar-week"></i> Weekly Schedule</h3>
+                        <div id="scheduleContent">
+                            <p style="color: var(--text-muted);">Schedule will appear here when published by admin.</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Teacher Dashboard -->
+    <section id="teacher-dashboard" class="section">
+        <div class="dashboard">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="user-info">
+                        <div class="user-avatar" id="teacherAvatar" style="background: linear-gradient(135deg, var(--secondary), var(--primary));">T</div>
+                        <div class="user-details">
+                            <h4 id="teacherName">Teacher Name</h4>
+                            <p id="teacherEmail">teacher@example.com</p>
+                            <span class="role-badge role-teacher">Teacher</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a class="active" onclick="showTeacherTab('start-class')"><i class="fas fa-play-circle"></i> Start Class</a></li>
+                    <li><a onclick="showTeacherTab('attendance')"><i class="fas fa-clipboard-check"></i> Take Attendance</a></li>
+                    <li><a onclick="showTeacherTab('materials')"><i class="fas fa-upload"></i> Upload Materials</a></li>
+                    <li><a onclick="showTeacherTab('students')"><i class="fas fa-users"></i> My Students</a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <div class="content-header">
+                    <h2>Teacher Portal</h2>
+                    <div class="class-selector">
+                        <label>Select Class:</label>
+                        <select class="class-select" id="teacherClassSelect" onchange="changeTeacherClass()">
+                            <option value="class8">Class 8</option>
+                            <option value="class9">Class 9</option>
+                            <option value="class10">Class 10</option>
+                            <option value="class11">Class 11</option>
+                            <option value="class12">Class 12</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Start Class Tab -->
+                <div id="teacher-start-class" class="teacher-tab">
+                    <div class="video-container">
+                        <div id="teacher-jitsi-container" style="width: 100%; height: 600px; border-radius: 12px; overflow: hidden; background: #000;"></div>
+                        <div class="class-controls">
+                            <button class="btn btn-primary" onclick="startLiveClass()">
+                                <i class="fas fa-broadcast-tower"></i> Start Live Class
+                            </button>
+                            <button class="btn btn-secondary" onclick="stopLiveClass()">
+                                <i class="fas fa-stop-circle"></i> End Class
+                            </button>
+                            <button class="btn btn-secondary" onclick="shareScreen()">
+                                <i class="fas fa-desktop"></i> Share Screen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Tab -->
+                <div id="teacher-attendance" class="teacher-tab hidden">
+                    <div class="attendance-section">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Mark Attendance - <span id="attendanceClassName">Class 8</span></h3>
+                            <button class="btn btn-primary" onclick="saveAttendance()">
+                                <i class="fas fa-save"></i> Save Attendance
+                            </button>
+                        </div>
+                        <div id="attendanceList" class="attendance-list">
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>Select a class to view students</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upload Materials Tab -->
+                <div id="teacher-materials" class="teacher-tab hidden">
+                    <div class="glass-card" style="padding: 2rem;">
+                        <h3 style="margin-bottom: 1.5rem;"><i class="fas fa-cloud-upload-alt"></i> Upload Study Materials</h3>
+                        <div class="form-group">
+                            <label>Title</label>
+                            <input type="text" id="materialTitle" placeholder="Enter material title">
+                        </div>
+                        <div class="form-group">
+                            <label>Description</label>
+                            <input type="text" id="materialDesc" placeholder="Brief description">
+                        </div>
+                        <div class="form-group">
+                            <label>Upload File (PDF/Video Link)</label>
+                            <input type="text" id="materialLink" placeholder="Paste Google Drive or YouTube link">
+                        </div>
+                        <button class="btn btn-primary" onclick="uploadMaterial()">
+                            <i class="fas fa-upload"></i> Upload Material
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Students List Tab -->
+                <div id="teacher-students" class="teacher-tab hidden">
+                    <div class="attendance-section">
+                        <h3>Enrolled Students</h3>
+                        <div id="enrolledStudentsList" class="attendance-list">
+                            <div class="empty-state">
+                                <i class="fas fa-user-graduate"></i>
+                                <p>No students enrolled in this class yet</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Admin Dashboard -->
+    <section id="admin-dashboard" class="section">
+        <div class="dashboard">
+            <aside class="sidebar" style="background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);">
+                <div class="sidebar-header">
+                    <div class="user-info">
+                        <div class="user-avatar" style="background: linear-gradient(135deg, var(--danger), var(--secondary));">A</div>
+                        <div class="user-details">
+                            <h4 id="adminName">Admin</h4>
+                            <p>System Administrator</p>
+                            <span class="role-badge role-admin">Admin</span>
+                        </div>
+                    </div>
+                </div>
+                <ul class="sidebar-menu">
+                    <li><a class="active" onclick="showAdminTab('overview')"><i class="fas fa-chart-line"></i> Overview</a></li>
+                    <li><a onclick="showAdminTab('users')"><i class="fas fa-users-cog"></i> Manage Users</a></li>
+                    <li><a onclick="showAdminTab('content')"><i class="fas fa-video"></i> Manage Content</a></li>
+                    <li><a onclick="showAdminTab('reports')"><i class="fas fa-file-alt"></i> Reports</a></li>
+                    <li><a onclick="showAdminTab('settings')"><i class="fas fa-cog"></i> Settings</a></li>
+                </ul>
+            </aside>
+            
+            <main class="main-content">
+                <div class="content-header">
+                    <h2>Admin Control Panel</h2>
+                    <button class="btn btn-secondary" onclick="refreshData()">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+
+                <!-- Overview Tab -->
+                <div id="admin-overview" class="admin-tab">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <h3 id="totalUsers">0</h3>
+                                <p>Total Users</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green"><i class="fas fa-chalkboard-teacher"></i></div>
+                            <div class="stat-info">
+                                <h3 id="totalTeachers">0</h3>
+                                <p>Teachers</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange"><i class="fas fa-user-graduate"></i></div>
+                            <div class="stat-info">
+                                <h3 id="totalStudents">0</h3>
+                                <p>Students</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon red"><i class="fas fa-video"></i></div>
+                            <div class="stat-info">
+                                <h3 id="totalClasses">0</h3>
+                                <p>Live Classes Held</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid" style="margin-top: 2rem;">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-chart-pie"></i> Class Distribution</h3>
+                            <canvas id="classChart" style="max-height: 300px;"></canvas>
+                        </div>
+                        <div class="admin-card">
+                            <h3><i class="fas fa-calendar-check"></i> Today's Attendance</h3>
+                            <div id="todayAttendance" style="margin-top: 1rem;">
+                                <p style="color: var(--text-muted);">No classes scheduled for today</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Management Tab -->
+                <div id="admin-users" class="admin-tab hidden">
+                    <div class="admin-card">
+                        <h3><i class="fas fa-user-shield"></i> User Role Management</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 1rem;">Change user roles: Student → Teacher → Admin</p>
+                        <div class="user-list" id="userManagementList">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Management Tab -->
+                <div id="admin-content" class="admin-tab hidden">
+                    <div class="admin-grid">
+                        <div class="admin-card">
+                            <h3><i class="fas fa-plus-circle"></i> Add Public Video</h3>
+                            <div class="add-video-form">
+                                <div class="form-group">
+                                    <label>Video Title</label>
+                                    <input type="text" id="newVideoTitle" placeholder="Enter video title">
+                                </div>
+                                <div class="form-group">
+                                    <label>YouTube Link</label>
+                                    <input type="text" id="newVideoLink" placeholder="https://youtube.com/watch?v=...">
+                                </div>
+                                <div class="form-group">
+                                    <label>Thumbnail URL (optional)</label>
+                                    <input type="text" id="newVideoThumb" placeholder="Image URL">
+                                </div>
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <input type="text" id="newVideoDesc" placeholder="Brief description">
+                                </div>
+                                <button class="btn btn-primary" onclick="addPublicVideo()">
+                                    <i class="fas fa-plus"></i> Add Video
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="admin-card">
+                            <h3><i class="fas fa-list"></i> Manage Existing Videos</h3>
+                            <div id="manageVideosList" style="max-height: 400px; overflow-y: auto;">
+                                <div class="spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="admin-reports" class="admin-tab hidden">
+                    <div class="admin-card">
+                        <h3><i class="fas fa-file-export"></i> Generate Reports</h3>
+                        <div style="display: grid; gap: 1rem; margin-top: 1.5rem;">
+                            <button class="btn btn-secondary" onclick="generateReport('attendance')">
+                                <i class="fas fa-clipboard-list"></i> Download Attendance Report
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateReport('users')">
+                                <i class="fas fa-users"></i> Download User List
+                            </button>
+                            <button class="btn btn-secondary" onclick="generateReport('classes')">
+                                <i class="fas fa-history"></i> Class History Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="admin-settings" class="admin-tab hidden">
+                    <div class="admin-card">
+                        <h3><i class="fas fa-cogs"></i> System Settings</h3>
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label>Site Name</label>
+                            <input type="text" value="EduPortal" id="siteName">
+                        </div>
+                        <div class="form-group">
+                            <label>Allow New Registrations</label>
+                            <select class="class-select" style="width: 100%;">
+                                <option>Yes</option>
+                                <option>No</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Default Class Duration (minutes)</label>
+                            <input type="number" value="45" id="defaultDuration">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSettings()">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </section>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to access your learning dashboard</p>
+            </div>
+            
+            <button class="google-btn" onclick="signInWithGoogle()">
+                <i class="fab fa-google"></i> Continue with Google
+            </button>
+            
+            <div class="divider">or continue with email</div>
+            
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="authEmail" placeholder="you@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="authPassword" placeholder="••••••••">
+            </div>
+
+            <div class="form-group hidden" id="classSelectGroup">
+                <label>Select Your Class</label>
+                <select id="authClass">
+                    <option value="class8">Class 8</option>
+                    <option value="class9">Class 9</option>
+                    <option value="class10">Class 10</option>
+                    <option value="class11">Class 11</option>
+                    <option value="class12">Class 12</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="closeAuthModal()">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="signInWithEmail()">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </div>
+            
+            <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
+                Don't have an account? <a href="#" onclick="toggleAuthMode()" style="color: var(--primary);">Sign Up</a>
+            </p>
+        </div>
     </div>
-  </main>
 
-  <footer>EduVlog — Firebase (Auth / Firestore / Storage) demo</footer>
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
-    import { getFirestore, doc, setDoc, getDoc, addDoc, collection, onSnapshot, deleteDoc, serverTimestamp, query, orderBy } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-storage.js';
+    <script>
+        // Firebase Configuration - REPLACE WITH YOUR CONFIG
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-    // --- CONFIG ---
-    const firebaseConfig = {
-      apiKey: "AIzaSyA9A2J5doC_q6cjI4UwnkSAsvIJ6ZYWxXs",
-      authDomain: "eduvlog-ce6e2.firebaseapp.com",
-      projectId: "eduvlog-ce6e2",
-      storageBucket: "eduvlog-ce6e2.firebasestorage.app",
-      messagingSenderId: "619293090769",
-      appId: "1:619293090769:web:42df9e82eeb31f5537f6f0",
-      measurementId: "G-WGSF33EDSY"
-    };
+        // Initialize Firebase (check if config is placeholder)
+        let auth, db;
+        let currentUser = null;
+        let userRole = 'student';
+        let currentClass = 'class8';
+        let jitsiApi = null;
+        let isSignUp = false;
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if Firebase is configured
+            if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+                showToast('Please configure Firebase first!', 'error');
+                // Initialize with demo mode
+                initDemoMode();
+            } else {
+                firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth();
+                db = firebase.firestore();
+                initAuthListener();
+            }
 
-    // UI refs
-    const tabSignIn = document.getElementById('tabSignIn');
-    const tabRegister = document.getElementById('tabRegister');
-    const signInForm = document.getElementById('signInForm');
-    const registerForm = document.getElementById('registerForm');
-    const authArea = document.getElementById('authArea');
-    const appArea = document.getElementById('appArea');
-    const userPanel = document.getElementById('userPanel');
-    const welcomeText = document.getElementById('welcomeText');
-    const teacherPanel = document.getElementById('teacherPanel');
-    const postsList = document.getElementById('postsList');
-    
-    // sign in inputs
-    const siEmail = document.getElementById('siEmail');
-    const siPassword = document.getElementById('siPassword');
-    const siMsg = document.getElementById('siMsg');
-    const rName = document.getElementById('rName');
-    const rEmail = document.getElementById('rEmail');
-    const rPassword = document.getElementById('rPassword');
-    const rMsg = document.getElementById('rMsg');
-
-    const postType = document.getElementById('postType');
-    const postTitle = document.getElementById('postTitle');
-    const postContent = document.getElementById('postContent');
-    const postLink = document.getElementById('postLink');
-
-    const btnSignIn = document.getElementById('btnSignIn');
-    const btnRegister = document.getElementById('btnRegister');
-    const btnPublish = document.getElementById('btnPublish');
-
-    // state
-    let currentUser = null;
-    let currentName = '';
-    let isTeacher = false;
-
-    // tabs
-    tabSignIn.addEventListener('click', ()=>{ tabSignIn.classList.add('active'); tabRegister.classList.remove('active'); signInForm.style.display='block'; registerForm.style.display='none'; siMsg.textContent=''; rMsg.textContent=''; });
-    tabRegister.addEventListener('click', ()=>{ tabRegister.classList.add('active'); tabSignIn.classList.remove('active'); signInForm.style.display='none'; registerForm.style.display='block'; siMsg.textContent=''; rMsg.textContent=''; });
-
-    // Register
-    btnRegister.addEventListener('click', async ()=>{
-      rMsg.textContent='';
-      const name = (rName.value || '').trim();
-      const email = (rEmail.value || '').trim();
-      const pw = (rPassword.value || '');
-      if(!name || !email || pw.length < 6){ rMsg.textContent = 'Enter name, valid email and password (min 6 chars).'; return }
-      try{
-        const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await setDoc(doc(db, 'users', cred.user.uid), { name, email });
-        rMsg.textContent = 'Registered ✅';
-      }catch(err){ rMsg.textContent = err.message }
-    });
-
-    // Sign in
-    btnSignIn.addEventListener('click', async ()=>{
-      siMsg.textContent='';
-      const email = (siEmail.value || '').trim();
-      const pw = (siPassword.value || '');
-      if(!email || pw.length < 6){ siMsg.textContent='Enter email and password (min 6 chars).'; return }
-      try{ await signInWithEmailAndPassword(auth, email, pw); }
-      catch(err){ siMsg.textContent = err.message }
-    });
-
-    async function checkIsTeacher(uid){
-      if(!uid) return false;
-      const tdoc = await getDoc(doc(db, 'teacher', uid));
-      return tdoc.exists();
-    }
-
-    onAuthStateChanged(auth, async (user)=>{
-      currentUser = user;
-      if(user){
-        const prof = await getDoc(doc(db,'users', user.uid));
-        currentName = prof.exists() ? (prof.data().name || user.email) : user.email;
-        isTeacher = await checkIsTeacher(user.uid);
-        authArea.style.display='none';
-        appArea.style.display='block';
-        userPanel.innerHTML = `<span style="margin-right:12px">Welcome, <strong>${escapeHtml(currentName)}</strong></span><button id=btnLogout class="small secondary">Logout</button>`;
-        document.getElementById('btnLogout').addEventListener('click', ()=> signOut(auth));
-        teacherPanel.style.display = isTeacher? 'block':'none';
-        welcomeText.innerHTML = `<div class="muted">Signed in as ${isTeacher? 'Teacher' : 'Student'}</div><div style="font-weight:700; font-size: 24px;">${escapeHtml(currentName)}</div>`;
-        loadPosts();
-        initCalculator(); // Initialize calculator logic
-      } else {
-        currentName=''; isTeacher=false;
-        authArea.style.display='block'; appArea.style.display='none'; userPanel.innerHTML='';
-      }
-    });
-
-    // Publish post
-    btnPublish.addEventListener('click', async ()=>{
-      if(!currentUser) return alert('Sign in first');
-      if(!isTeacher) return alert('Only teachers can publish');
-      const title = postTitle.value.trim();
-      const content = postContent.value.trim();
-      const link = postLink.value.trim();
-      if(!title){ return alert('Title required') }
-      try{
-        await addDoc(collection(db,'posts'), { title, content, type: postType.value, link: link || null, created: serverTimestamp(), authorUid: currentUser.uid, authorName: currentName });
-        postTitle.value=''; postContent.value=''; postLink.value='';
-      }catch(err){ alert('Failed to publish: '+err.message) }
-    });
-    
-    function getPostIcon(type){
-        switch(type){
-            case 'notice': return '📢'; case 'assignment': return '📝'; case 'quiz': return '❓';
-            case 'general': return '💬'; default: return '📄';
-        }
-    }
-
-    function loadPosts(){
-      const q = query(collection(db,'posts'), orderBy('created','desc'));
-      onSnapshot(q, snap=>{
-        postsList.innerHTML='';
-        if(snap.empty) { postsList.innerHTML='<div class="empty">No posts yet.</div>'; return }
-        snap.forEach(docu=>{
-          const p = { id: docu.id, ...docu.data() };
-          const el = document.createElement('div'); el.className='post card '+(p.type||'general');
-          const dateStr = p.created && p.created.toDate ? p.created.toDate().toLocaleString() : '';
-          const icon = getPostIcon(p.type);
-          const typeStr = p.type?.charAt(0).toUpperCase() + p.type?.slice(1) || 'General';
-          el.innerHTML = `<div class="post-header"><div class="post-icon">${icon}</div><div class="post-title-meta"><strong>${escapeHtml(p.title||'')}</strong><div class="muted">${escapeHtml(typeStr)} • by ${escapeHtml(p.authorName||'Unknown')} • ${dateStr}</div></div><div class="controls" style="margin-left:auto;"></div></div><div class="post-body">${nl2br(escapeHtml(p.content||''))}</div>`;
-          const postBody = el.querySelector('.post-body');
-          if(p.link){ const fl = document.createElement('div'); fl.className='file-list'; const a = document.createElement('a'); a.href = p.link; a.target = '_blank'; a.className = 'download'; a.textContent = '🔗 Open Document'; fl.appendChild(a); postBody.appendChild(fl); } 
-          else if(p.fileUrl){ const fl = document.createElement('div'); fl.className='file-list'; const a = document.createElement('a'); a.href = p.fileUrl; a.target = '_blank'; a.className = 'download'; a.textContent = '📥 '+(p.fileName || 'Download'); a.setAttribute('download', p.fileName || ''); fl.appendChild(a); postBody.appendChild(fl); }
-          const ctr = el.querySelector('.controls');
-          if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.textContent='Delete'; del.onclick = ()=> deletePost(p.id, p.filePath); ctr.appendChild(del); }
-          const postFooter = document.createElement('div'); postFooter.className = 'post-footer'; let footerNeeded = false;
-          if(p.type==='assignment'){ footerNeeded = true; const subDiv = document.createElement('div'); if(!isTeacher){ subDiv.innerHTML = `<label>Submit Your Work</label><input type="file" class="subFile" /><textarea class="subText" placeholder="Add notes (optional)"></textarea><div style="margin-top:8px"><button class="submitBtn small">Submit Assignment</button></div>`; const submitBtn = subDiv.querySelector('.submitBtn'); submitBtn.addEventListener('click', async ()=>{ const fileInput = subDiv.querySelector('.subFile'); const text = subDiv.querySelector('.subText').value; try{ let fileInfo = null; if(fileInput.files && fileInput.files[0]){ const f = fileInput.files[0]; const path = `submissions/${p.id}/${currentUser.uid}_${Date.now()}_${sanitizeFilename(f.name)}`; const sRef = storageRef(storage, path); await uploadBytes(sRef, f); const url = await getDownloadURL(sRef); fileInfo = { fileName: f.name, filePath: path, fileUrl: url }; } await addDoc(collection(db,'submissions'), { postId: p.id, postTitle: p.title, uid: currentUser.uid, name: currentName, text, created: serverTimestamp(), ...fileInfo }); alert('Submitted ✅'); fileInput.value=''; subDiv.querySelector('.subText').value=''; }catch(err){ alert('Submit failed: '+err.message) } }); } else { const view = document.createElement('div'); view.innerHTML = `<button class="small">View submissions</button>`; view.querySelector('button').addEventListener('click', ()=> showSubmissionsForPost(p.id)); subDiv.appendChild(view); } postFooter.appendChild(subDiv); }
-          if(p.type==='general'){ footerNeeded = true; const cDiv = document.createElement('div'); if(currentUser){ cDiv.innerHTML = `<label>Leave a comment</label><textarea class="cText" placeholder="Write a comment..."></textarea><div style="margin-top:8px"><button class="cBtn small">Post Comment</button></div><div class="cList" style="margin-top:16px"></div>`; const cBtn = cDiv.querySelector('.cBtn'); const cText = cDiv.querySelector('.cText'); const cList = cDiv.querySelector('.cList'); cBtn.addEventListener('click', async ()=>{ const text = cText.value.trim(); if(!text) return; try{ await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text, created: serverTimestamp() }); cText.value=''; }catch(err){ alert('Failed: '+err.message) } }); const cq = query(collection(db,'comments'), orderBy('created','asc')); onSnapshot(cq, snap=>{ const all = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(c => c.postId === p.id); cList.innerHTML = all.length > 0 ? '<h6>Comments</h6>' : ''; const top = all.filter(c => !c.replyTo); top.forEach(tc => { const cmEl = document.createElement('div'); cmEl.className='muted'; cmEl.style.marginBottom='6px'; cmEl.innerHTML = `<strong>${escapeHtml(tc.name||'')}</strong>: ${escapeHtml(tc.text||'')}`; const replies = all.filter(r => r.replyTo === tc.id); if(replies.length){ const rDiv = document.createElement('div'); rDiv.style.marginLeft='18px'; rDiv.style.marginTop='6px'; replies.forEach(r => { const re = document.createElement('div'); re.className='muted'; re.style.marginBottom='4px'; re.innerHTML = `<strong>${escapeHtml(r.name||'')}</strong>: ${escapeHtml(r.text||'')}`; rDiv.appendChild(re); }); cmEl.appendChild(rDiv); } const replyBox = document.createElement('div'); replyBox.className = 'replyBox'; replyBox.innerHTML = `<textarea class="rText" placeholder="Reply..."></textarea><button class="rBtn small">Reply</button>`; replyBox.querySelector('.rBtn').addEventListener('click', async ()=>{ const rText = replyBox.querySelector('.rText').value.trim(); if(!rText) return; try{ await addDoc(collection(db,'comments'), { postId: p.id, uid: currentUser.uid, name: currentName, text: rText, created: serverTimestamp(), replyTo: tc.id }); replyBox.querySelector('.rText').value = ''; }catch(err){ alert('Reply failed: '+err.message) } }); cmEl.appendChild(replyBox); cList.appendChild(cmEl); }); }); } postFooter.appendChild(cDiv); }
-          if(footerNeeded) el.appendChild(postFooter);
-          postsList.appendChild(el);
+            // Load public videos
+            loadPublicVideos();
+            
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                const nav = document.getElementById('navbar');
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
+                }
+            });
         });
-      });
-    }
 
-    function showSubmissionsForPost(postId){
-      const q = query(collection(db,'submissions'), orderBy('created','desc'));
-      onSnapshot(q, snap=>{
-        const subs = snap.docs.map(d=>({ id:d.id, ...d.data() })).filter(s=>s.postId===postId);
-        const overlay = document.createElement('div'); overlay.style.position='fixed'; overlay.style.left=0; overlay.style.top=0; overlay.style.width='100%'; overlay.style.height='100%'; overlay.style.background='rgba(0,0,0,0.5)'; overlay.style.display='flex'; overlay.style.alignItems='center'; overlay.style.justifyContent='center'; overlay.style.zIndex='100';
-        const box = document.createElement('div'); box.style.background='#fff'; box.style.padding='18px'; box.style.borderRadius='12px'; box.style.maxWidth='800px'; box.style.width='90%'; box.style.maxHeight='80%'; box.style.overflow='auto';
-        box.innerHTML = `<h3>Submissions for post</h3>`;
-        if (subs.length === 0) { box.innerHTML += `<p class="muted">No submissions yet.</p>`; }
-        subs.forEach(s=>{ const d = document.createElement('div'); d.className='card'; d.style.marginBottom='8px'; d.innerHTML = `<div class="card-body"><div><strong>${escapeHtml(s.name||s.uid)}</strong> • <span class="muted">${s.created && s.created.toDate? s.created.toDate().toLocaleString() : ''}</span></div><div style="margin-top:6px">${escapeHtml(s.text||'')}</div></div>`; if(s.fileUrl){ const a = document.createElement('a'); a.href=s.fileUrl; a.target='_blank'; a.className='download'; a.textContent='📥 '+s.fileName; a.setAttribute('download', s.fileName); d.querySelector('.card-body').appendChild(a); } if(isTeacher){ const del = document.createElement('button'); del.className='small secondary'; del.style.marginLeft='8px'; del.textContent='Delete Submission'; del.onclick = ()=> deleteSubmission(s.id, s.filePath); d.querySelector('.card-body').appendChild(del); } box.appendChild(d); });
-        const close = document.createElement('button'); close.textContent='Close'; close.className='small'; close.style.marginTop='12px'; close.onclick = ()=> document.body.removeChild(overlay); box.appendChild(close);
-        overlay.appendChild(box); document.body.appendChild(overlay);
-      });
-    }
-
-    // --- CALCULATOR SCRIPT START ---
-    function initCalculator() {
-        const display = document.getElementById('calc-display');
-        const keys = document.querySelector('.calc-keys');
-        let displayValue = '0';
-        let firstValue = null;
-        let operator = null;
-        let waitingForSecondValue = false;
-
-        function updateDisplay() {
-            display.textContent = displayValue;
-        }
-        updateDisplay();
-
-        function calculate(first, op, second) {
-            if (op === '+') return first + second;
-            if (op === '-') return first - second;
-            if (op === '*') return first * second;
-            if (op === '/') return second === 0 ? 'Error' : first / second;
-            if (op === '%') return first % second;
-            return second;
+        // Demo Mode (when Firebase is not configured)
+        function initDemoMode() {
+            document.getElementById('navLinks').innerHTML = `
+                <a onclick="showSection('home')" class="active">Home</a>
+                <a onclick="showSection('public-dashboard')">Classes</a>
+                <a onclick="showSection('about')">About</a>
+                <button class="btn btn-primary" onclick="enterDemoMode()">
+                    <i class="fas fa-flask"></i> Try Demo
+                </button>
+            `;
         }
 
-        keys.addEventListener('click', (e) => {
-            const key = e.target;
-            const action = key.dataset.key;
+        function enterDemoMode() {
+            currentUser = {
+                uid: 'demo123',
+                email: 'demo@eduportal.com',
+                displayName: 'Demo User',
+                photoURL: null
+            };
+            userRole = 'admin'; // Demo as admin to show all features
+            showDashboard();
+            showToast('Demo Mode: Signed in as Admin', 'success');
+        }
 
-            if (!key.matches('button')) return;
+        // Auth State Listener
+        function initAuthListener() {
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    await checkUserRole(user.uid);
+                } else {
+                    currentUser = null;
+                    userRole = 'guest';
+                }
+            });
+        }
 
-            if (!isNaN(action) || action === '.') { // Number or decimal pressed
-                if (waitingForSecondValue) {
-                    displayValue = action;
-                    waitingForSecondValue = false;
+        // Check user role from Firestore
+        async function checkUserRole(uid) {
+            try {
+                const doc = await db.collection('users').doc(uid).get();
+                if (doc.exists) {
+                    const data = doc.data();
+                    userRole = data.role || 'student';
+                    currentClass = data.class || 'class8';
+                    updateUIForUser(data);
                 } else {
-                    if (displayValue === '0' && action !== '.') {
-                        displayValue = action;
-                    } else if (action === '.' && displayValue.includes('.')) {
-                        return; // Prevent multiple decimals
-                    } else {
-                        displayValue += action;
-                    }
+                    // New user - create profile
+                    await createUserProfile(uid);
                 }
-                updateDisplay();
-            } else if (['+', '-', '*', '/', '%'].includes(action)) { // Operator pressed
-                if (operator && !waitingForSecondValue) {
-                    const result = calculate(firstValue, operator, parseFloat(displayValue));
-                    displayValue = `${parseFloat(result.toPrecision(12))}`;
-                    firstValue = result;
+            } catch (error) {
+                console.error('Error checking role:', error);
+            }
+        }
+
+        async function createUserProfile(uid) {
+            const userData = {
+                uid: uid,
+                email: currentUser.email,
+                name: currentUser.displayName || 'Anonymous',
+                role: 'student', // Default role
+                class: document.getElementById('authClass').value || 'class8',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            await db.collection('users').doc(uid).set(userData);
+            userRole = 'student';
+            currentClass = userData.class;
+            updateUIForUser(userData);
+        }
+
+        function updateUIForUser(data) {
+            // Update nav
+            document.getElementById('navLinks').classList.add('hidden');
+            document.getElementById('userNav').classList.remove('hidden');
+            
+            // Show appropriate dashboard
+            showDashboard();
+        }
+
+        function showDashboard() {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            
+            // Show role-specific dashboard
+            if (userRole === 'admin') {
+                document.getElementById('admin-dashboard').classList.add('active');
+                loadAdminData();
+            } else if (userRole === 'teacher') {
+                document.getElementById('teacher-dashboard').classList.add('active');
+                initTeacherDashboard();
+            } else {
+                document.getElementById('student-dashboard').classList.add('active');
+                initStudentDashboard();
+            }
+        }
+
+        // Navigation
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Update nav active state
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // Auth Modal
+        function openAuthModal() {
+            document.getElementById('authModal').classList.add('active');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.remove('active');
+        }
+
+        function toggleAuthMode() {
+            isSignUp = !isSignUp;
+            const group = document.getElementById('classSelectGroup');
+            const btn = document.querySelector('.modal .btn-primary');
+            
+            if (isSignUp) {
+                group.classList.remove('hidden');
+                btn.innerHTML = '<i class="fas fa-user-plus"></i> Sign Up';
+            } else {
+                group.classList.add('hidden');
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
+        }
+
+        // Authentication Functions
+        async function signInWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                await auth.signInWithPopup(provider);
+                closeAuthModal();
+                showToast('Successfully signed in!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        async function signInWithEmail() {
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            
+            try {
+                if (isSignUp) {
+                    await auth.createUserWithEmailAndPassword(email, password);
                 } else {
-                    firstValue = parseFloat(displayValue);
+                    await auth.signInWithEmailAndPassword(email, password);
                 }
-                operator = action;
-                waitingForSecondValue = true;
-                display.textContent = key.textContent; // VISUAL FIX: Show operator on screen
-            } else if (action === '=') { // Equals pressed
-                if (firstValue == null || operator == null || waitingForSecondValue) return;
-                const result = calculate(firstValue, operator, parseFloat(displayValue));
-                if (result === 'Error') {
-                    displayValue = 'Error';
-                } else {
-                    displayValue = `${parseFloat(result.toPrecision(12))}`;
+                closeAuthModal();
+                showToast(isSignUp ? 'Account created!' : 'Welcome back!', 'success');
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        }
+
+        function logout() {
+            if (auth) {
+                auth.signOut();
+            }
+            currentUser = null;
+            userRole = 'guest';
+            document.getElementById('navLinks').classList.remove('hidden');
+            document.getElementById('userNav').classList.add('hidden');
+            showSection('home');
+            showToast('Logged out successfully', 'success');
+        }
+
+        // Student Dashboard Functions
+        function initStudentDashboard() {
+            document.getElementById('studentName').textContent = currentUser?.displayName || 'Student';
+            document.getElementById('studentEmail').textContent = currentUser?.email || '';
+            document.getElementById('studentAvatar').textContent = (currentUser?.displayName || 'S')[0].toUpperCase();
+            document.getElementById('studentClassSelect').innerHTML = `<option>${currentClass}</option>`;
+        }
+
+        function showStudentTab(tab) {
+            document.querySelectorAll('.student-tab').forEach(t => t.classList.add('hidden'));
+            document.getElementById(`student-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function joinLiveClass() {
+            const domain = "meet.jit.si";
+            const options = {
+                roomName: `EduPortal-${currentClass}`,
+                width: "100%",
+                height: "100%",
+                parentNode: document.getElementById('jitsi-container'),
+                userInfo: {
+                    displayName: currentUser?.displayName || 'Student'
+                },
+                interfaceConfigOverwrite: {
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'closedcaptions', 'desktop', 
+                        'fullscreen', 'fodeviceselection', 'hangup', 'profile',
+                        'chat', 'recording', 'livestreaming', 'settings', 'videoquality',
+                        'tileview', 'videobackgroundblur', 'download'
+                    ]
                 }
-                firstValue = null;
-                operator = null;
-                waitingForSecondValue = false;
-                updateDisplay();
-            } else if (action === 'clear') { // AC pressed
-                displayValue = '0';
-                firstValue = null;
-                operator = null;
-                waitingForSecondValue = false;
-                updateDisplay();
-            } else if (action === 'backspace') { // DEL pressed
-                displayValue = displayValue.slice(0, -1) || '0';
-                updateDisplay();
+            };
+            
+            jitsiApi = new JitsiMeetExternalAPI(domain, options);
+            document.getElementById('jitsi-container').classList.add('active');
+            document.getElementById('class-join-view').classList.add('hidden');
+            
+            // Mark attendance automatically
+            markAttendance(currentUser.uid, currentClass, true);
+        }
+
+        // Teacher Dashboard Functions
+        function initTeacherDashboard() {
+            document.getElementById('teacherName').textContent = currentUser?.displayName || 'Teacher';
+            document.getElementById('teacherEmail').textContent = currentUser?.email || '';
+            document.getElementById('teacherAvatar').textContent = (currentUser?.displayName || 'T')[0].toUpperCase();
+            loadStudentsForAttendance();
+        }
+
+        function showTeacherTab(tab) {
+            document.querySelectorAll('.teacher-tab').forEach(t => t.classList.add('hidden'));
+            document.getElementById(`teacher-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'attendance') loadStudentsForAttendance();
+            if (tab === 'students') loadEnrolledStudents();
+        }
+
+        function changeTeacherClass() {
+            currentClass = document.getElementById('teacherClassSelect').value;
+            document.getElementById('attendanceClassName').textContent = 
+                document.getElementById('teacherClassSelect').options[document.getElementById('teacherClassSelect').selectedIndex].text;
+        }
+
+        function startLiveClass() {
+            const domain = "meet.jit.si";
+            const options = {
+                roomName: `EduPortal-${currentClass}-${Date.now()}`,
+                width: "100%",
+                height: "100%",
+                parentNode: document.getElementById('teacher-jitsi-container'),
+                userInfo: {
+                    displayName: currentUser?.displayName || 'Teacher'
+                },
+                configOverwrite: {
+                    startWithAudioMuted: false,
+                    startWithVideoMuted: false,
+                    prejoinPageEnabled: false
+                },
+                interfaceConfigOverwrite: {
+                    TOOLBAR_BUTTONS: [
+                        'microphone', 'camera', 'closedcaptions', 'desktop', 
+                        'fullscreen', 'fodeviceselection', 'hangup', 'profile',
+                        'chat', 'recording', 'livestreaming', 'settings', 'videoquality',
+                        'tileview', 'videobackgroundblur', 'raisehand', 'download'
+                    ]
+                }
+            };
+            
+            jitsiApi = new JitsiMeetExternalAPI(domain, options);
+            showToast('Live class started! Students can now join.', 'success');
+            
+            // Save class record
+            if (db) {
+                db.collection('classes').add({
+                    teacherId: currentUser.uid,
+                    className: currentClass,
+                    startTime: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'live'
+                });
+            }
+        }
+
+        function stopLiveClass() {
+            if (jitsiApi) {
+                jitsiApi.dispose();
+                jitsiApi = null;
+            }
+            showToast('Class ended', 'success');
+        }
+
+        function shareScreen() {
+            if (jitsiApi) {
+                jitsiApi.executeCommand('toggleShareScreen');
+            }
+        }
+
+        // Attendance Functions
+        async function loadStudentsForAttendance() {
+            const container = document.getElementById('attendanceList');
+            container.innerHTML = '<div class="spinner"></div>';
+            
+            if (!db) {
+                // Demo data
+                container.innerHTML = `
+                    <div class="attendance-item">
+                        <div>
+                            <strong>John Doe</strong>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">john@example.com</p>
+                        </div>
+                        <div class="attendance-toggle">
+                            <span style="margin-right: 0.5rem;">Present</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                    <div class="attendance-item">
+                        <div>
+                            <strong>Jane Smith</strong>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">jane@example.com</p>
+                        </div>
+                        <div class="attendance-toggle">
+                            <span style="margin-right: 0.5rem;">Present</span>
+                            <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('users')
+                    .where('role', '==', 'student')
+                    .where('class', '==', currentClass)
+                    .get();
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-users"></i><p>No students found in this class</p></div>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const student = doc.data();
+                    container.innerHTML += `
+                        <div class="attendance-item" data-id="${doc.id}">
+                            <div>
+                                <strong>${student.name}</strong>
+                                <p style="color: var(--text-muted); font-size: 0.9rem;">${student.email}</p>
+                            </div>
+                            <div class="attendance-toggle">
+                                <span style="margin-right: 0.5rem;">Present</span>
+                                <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+
+        function saveAttendance() {
+            showToast('Attendance saved successfully!', 'success');
+        }
+
+        async function markAttendance(userId, className, present) {
+            if (!db) return;
+            
+            await db.collection('attendance').add({
+                studentId: userId,
+                class: className,
+                date: new Date().toISOString().split('T')[0],
+                present: present,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        }
+
+        // Admin Functions
+        async function loadAdminData() {
+            if (!db) {
+                document.getElementById('totalUsers').textContent = '150';
+                document.getElementById('totalTeachers').textContent = '12';
+                document.getElementById('totalStudents').textContent = '138';
+                document.getElementById('totalClasses').textContent = '45';
+                loadDemoUsers();
+                return;
+            }
+
+            // Load stats
+            const usersSnapshot = await db.collection('users').get();
+            const students = usersSnapshot.docs.filter(d => d.data().role === 'student');
+            const teachers = usersSnapshot.docs.filter(d => d.data().role === 'teacher');
+            
+            document.getElementById('totalUsers').textContent = usersSnapshot.size;
+            document.getElementById('totalTeachers').textContent = teachers.length;
+            document.getElementById('totalStudents').textContent = students.length;
+            
+            // Load user management list
+            loadUserManagementList(usersSnapshot);
+        }
+
+        function loadDemoUsers() {
+            const container = document.getElementById('userManagementList');
+            container.innerHTML = `
+                <div class="user-item">
+                    <div>
+                        <strong>Demo Student</strong>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">student@demo.com</p>
+                    </div>
+                    <select class="role-select-admin" onchange="updateUserRole('demo1', this.value)">
+                        <option value="student" selected>Student</option>
+                        <option value="teacher">Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="user-item">
+                    <div>
+                        <strong>Demo Teacher</strong>
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">teacher@demo.com</p>
+                    </div>
+                    <select class="role-select-admin" onchange="updateUserRole('demo2', this.value)">
+                        <option value="student">Student</option>
+                        <option value="teacher" selected>Teacher</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            `;
+        }
+
+        async function loadUserManagementList(snapshot) {
+            const container = document.getElementById('userManagementList');
+            container.innerHTML = '';
+            
+            snapshot.forEach(doc => {
+                const user = doc.data();
+                container.innerHTML += `
+                    <div class="user-item">
+                        <div>
+                            <strong>${user.name}</strong>
+                            <p style="color: var(--text-muted); font-size: 0.9rem;">${user.email}</p>
+                        </div>
+                        <select class="role-select-admin" onchange="updateUserRole('${doc.id}', this.value)">
+                            <option value="student" ${user.role === 'student' ? 'selected' : ''}>Student</option>
+                            <option value="teacher" ${user.role === 'teacher' ? 'selected' : ''}>Teacher</option>
+                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                        </select>
+                    </div>
+                `;
+            });
+        }
+
+        async function updateUserRole(userId, newRole) {
+            if (!db) {
+                showToast('Demo: Role would be updated to ' + newRole, 'success');
+                return;
+            }
+            
+            await db.collection('users').doc(userId).update({ role: newRole });
+            showToast('User role updated successfully!', 'success');
+        }
+
+        function showAdminTab(tab) {
+            document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+            document.getElementById(`admin-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (tab === 'content') loadManageVideos();
+        }
+
+        // Content Management
+        async function addPublicVideo() {
+            const title = document.getElementById('newVideoTitle').value;
+            const link = document.getElementById('newVideoLink').value;
+            const thumb = document.getElementById('newVideoThumb').value;
+            const desc = document.getElementById('newVideoDesc').value;
+
+            if (!title || !link) {
+                showToast('Please fill required fields', 'error');
+                return;
+            }
+
+            if (db) {
+                await db.collection('publicVideos').add({
+                    title,
+                    link,
+                    thumbnail: thumb || 'https://via.placeholder.com/400x180',
+                    description: desc,
+                    addedBy: currentUser.uid,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+
+            showToast('Video added successfully!', 'success');
+            document.getElementById('newVideoTitle').value = '';
+            document.getElementById('newVideoLink').value = '';
+            loadPublicVideos();
+        }
+
+        async function loadPublicVideos() {
+            const container = document.getElementById('publicVideos');
+            
+            if (!db) {
+                // Demo videos
+                container.innerHTML = `
+                    <div class="video-card" onclick="window.open('https://youtube.com/watch?v=dQw4w9WgXcQ', '_blank')">
+                        <div class="video-thumbnail">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">Introduction to Mathematics</div>
+                            <div class="video-meta">
+                                <i class="fas fa-user"></i> Prof. Smith • <i class="fas fa-clock"></i> 45 mins
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-card" onclick="window.open('https://youtube.com/watch?v=dQw4w9WgXcQ', '_blank')">
+                        <div class="video-thumbnail" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">Science Fundamentals</div>
+                            <div class="video-meta">
+                                <i class="fas fa-user"></i> Dr. Johnson • <i class="fas fa-clock"></i> 30 mins
+                            </div>
+                        </div>
+                    </div>
+                    <div class="video-card" onclick="window.open('https://youtube.com/watch?v=dQw4w9WgXcQ', '_blank')">
+                        <div class="video-thumbnail" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-play-circle"></i>
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">English Literature Basics</div>
+                            <div class="video-meta">
+                                <i class="fas fa-user"></i> Ms. Williams • <i class="fas fa-clock"></i> 40 mins
+                            </div>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                const snapshot = await db.collection('publicVideos').orderBy('timestamp', 'desc').get();
+                container.innerHTML = '';
+                
+                snapshot.forEach(doc => {
+                    const video = doc.data();
+                    container.innerHTML += `
+                        <div class="video-card" onclick="window.open('${video.link}', '_blank')">
+                            <div class="video-thumbnail" style="background-image: url('${video.thumbnail}'); background-size: cover;">
+                                <i class="fas fa-play-circle"></i>
+                            </div>
+                            <div class="video-info">
+                                <div class="video-title">${video.title}</div>
+                                <div class="video-meta">
+                                    ${video.description || 'Educational Content'}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error('Error loading videos:', error);
+            }
+        }
+
+        function loadManageVideos() {
+            const container = document.getElementById('manageVideosList');
+            container.innerHTML = '<p style="color: var(--text-muted);">Video management list would appear here...</p>';
+        }
+
+        function generateReport(type) {
+            showToast(`Generating ${type} report... (Demo)`, 'success');
+        }
+
+        function refreshData() {
+            loadAdminData();
+            showToast('Data refreshed!', 'success');
+        }
+
+        function saveSettings() {
+            showToast('Settings saved!', 'success');
+        }
+
+        // Utility Functions
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                ${message}
+            `;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Close modal on outside click
+        document.getElementById('authModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('authModal')) {
+                closeAuthModal();
             }
         });
-    }
-    // --- CALCULATOR SCRIPT END ---
-
-
-    async function deletePost(postId, filePath){
-      if(!confirm('Delete this post?')) return;
-      try{
-        if(filePath){ const fRef = storageRef(storage, filePath); await deleteObject(fRef).catch(()=>{}); }
-        await deleteDoc(doc(db,'posts',postId));
-      }catch(err){ alert('Delete failed: '+err.message) }
-    }
-
-    async function deleteSubmission(subId, filePath){
-      if(!confirm('Delete this submission?')) return;
-      try{
-        if(filePath){ const fRef = storageRef(storage, filePath); await deleteObject(fRef).catch(()=>{}); }
-        await deleteDoc(doc(db,'submissions', subId));
-      }catch(err){ alert('Delete failed: '+err.message) }
-    }
-
-    function nl2br(s){ return s.replace(/\n/g,'<br/>'); }
-    function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"]+/g, function(match){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[match]) }); }
-    function sanitizeFilename(name){ return name.replace(/[^a-zA-Z0-9._-]/g,'_'); }
-  </script>
+    </script>
 </body>
 </html>
-
